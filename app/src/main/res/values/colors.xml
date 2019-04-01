@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="spiner_background_color">#fff</color>
+    <color name="spiner_border_color">#ccc</color>
+    <color name="spiner_color">#333</color>
+
+    <color name="colorPrimary">#578fc8</color>
+    <color name="colorPrimaryDark">#4985c3</color>
+    <color name="colorAccent">#66CDAA</color>
+    <color name="colorRed">#ff0000</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorGray">#bbbbbb</color>
+    <color name="colorPrimary_1">#578fc8</color>
+    <color name="colorPrimaryDark_1">#4985c3</color>
+    <color name="colorAccent_1">#d6e4f2</color>
+    <color name="color_row_check_1">#d9edf7</color>
+    <color name="colorBackground_1">#ffffff</color>
+    <color name="colorTextColor">#444444</color>
+    <color name="colorTextColor_1">#000000</color>
+    <color name="colorTextColorTitle_1">#ffffff</color>
+    <color name="colorTextViewChangePassword_1">#27ae60</color>
+    <color name="colorToolBar_Row_1">#000066</color>
+    <color name="colorTextLogin_1">#000000</color>
+    <color name="colorAlertWrong_1">#e74c3c</color>
+    <color name="colorImgBtnUpload_1">#67b2e4</color>
+    <color name="colorBorderEditext_1">#004444</color>
+    <color name="colorBackground_csm_1">#66CDAA</color>
+    <color name="colorCSC_SL_0_1">#b0e5e5</color>
+    <color name="colorCSC_SL_1_1">#e5e5b0</color>
+    <color name="colorCSC_SL_2_1">#b0cae5</color>
+    <color name="colorCSC_SL_3_1">#e5b1b0</color>
+
+    <color name="color_chua_sua_chua">#e5b1b0</color>
+    <color name="color_da_sua_chua">#b0cae5</color>
+    <color name="color_dang_sua_chua">#e5e5b0</color>
+    <!--Theme 2-->
+    <color name="colorPrimary_2">#dff0d8</color>
+    <color name="colorPrimaryDark_2">#0055a0</color>
+    <color name="colorAccent_2">#FF4081</color>
+    <color name="color_row_check_2">#d9edf7</color>
+    <color name="colorBackground_2">#000000</color>
+    <color name="colorTextColor_2">#ffffff</color>
+    <color name="colorTextColorTitle_2">#ffffff</color>
+    <color name="colorTextViewChangePassword_2">#27ae60</color>
+    <color name="colorToolBar_Row_2">#000066</color>
+    <color name="colorTextLogin_2">#000000</color>
+    <color name="colorAlertWrongPassword_2">#e74c3c</color>
+    <color name="colorImgBtnUpload_2">#67b2e4</color>
+    <color name="colorBorderEditext_2">#ffffff</color>
+    <color name="colorBackground_csm_2">#66CDAA</color>
+    <color name="colorPrimaryLight">#029dea</color>
+</resources>

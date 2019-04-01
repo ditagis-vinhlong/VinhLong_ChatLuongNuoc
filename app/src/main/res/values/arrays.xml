@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="district_arrays">
+        <item> Chọn quận huyện </item>
+        <item> Quận Phú Nhuận </item>
+        <item> Quận Tân Bình</item>
+        <item> Quận Tân Phú </item>
+    </string-array>
+    <string-array name="phanloai_arrays">
+        <item> Chọn loại sự cố </item>
+        <item> A </item>
+        <item> B </item>
+    </string-array>
+    <string-array name="trangthai_arrays">
+        <item>Chưa sửa chữa</item>
+        <item>Đang sửa chữa</item>
+        <item>Đã sửa chữa</item>
+    </string-array>
+
+    <!--diemdanhgianuoc-->
+    <string-array name="addFields_diemdanhgianuoc">
+        <item>TenKhachHang</item>
+        <item>SoLuongMau</item>
+        <item>DiaChi</item>
+        <item>NgayCapNhat</item>
+        <item>GhiChu</item>
+        <item>LoaiNuoc</item>
+
+    </string-array>
+
+    <string-array name="updateFields_diemdanhgianuoc">
+        <item>TenKhachHang</item>
+        <item>SoLuongMau</item>
+        <item>DiaChi</item>
+        <item>NgayCapNhat</item>
+        <item>GhiChu</item>
+        <item>LoaiNuoc</item>
+    </string-array>
+    <string-array name="queryFields_diemdanhgianuoc">
+        <item>IDDiemDanhGia</item>
+        <item>TenKhachHang</item>
+        <item>SoLuongMau</item>
+        <item>DiaChi</item>
+        <item>NgayCapNhat</item>
+        <item>GhiChu</item>
+        <item>LoaiNuoc</item>
+
+    </string-array>
+    <string-array name="outFields_diemdanhgianuoc">
+        <item>IDDiemDanhGia</item>
+        <item>TenKhachHang</item>
+        <item>SoLuongMau</item>
+        <item>DiaChi</item>
+        <item>NgayCapNhat</item>
+        <item>GhiChu</item>
+        <item>LoaiNuoc</item>
+
+    </string-array>
+    <!--diemdanhgianuoc-->
+    <string-array name="addFields_maudanhgia">
+        <item>IDDiemDanhGia</item>
+        <item>IDMauKiemNghiem</item>
+        <item>TenMau</item>
+        <item>TinhTrangMau</item>
+        <item>NgayNhanMau</item>
+        <item>ThoiGianThuNghiem</item>
+        <item>NguoiLayMau</item>
+        <item>DoDuc</item>
+        <item>PH</item>
+        <item>CloDu</item>
+        <item>NgayCapNhat</item>
+        <item>GhiChu</item>
+    </string-array>
+
+    <string-array name="updateFields_maudanhgia">
+        <item>TenMau</item>
+        <item>TinhTrangMau</item>
+        <item>NgayNhanMau</item>
+        <item>ThoiGianThuNghiem</item>
+        <item>NguoiLayMau</item>
+        <item>DoDuc</item>
+        <item>PH</item>
+        <item>CloDu</item>
+        <item>GhiChu</item>
+    </string-array>
+    <string-array name="queryFields_maudanhgia">
+        <item>IDDiemDanhGia</item>
+        <item>IDMauKiemNghiem</item>
+        <item>TenMau</item>
+        <item>TinhTrangMau</item>
+        <item>NgayNhanMau</item>
+        <item>ThoiGianThuNghiem</item>
+        <item>NguoiLayMau</item>
+        <item>DoMau</item>
+        <item>Mui</item>
+        <item>DoDuc</item>
+        <item>PH</item>
+        <item>DoCung</item>
+        <item>Clorua</item>
+        <item>Sat</item>
+        <item>Mangan</item>
+        <item>Nitrat</item>
+        <item>Nitrit</item>
+        <item>Sunphat</item>
+        <item>ChiSoPecmanganate</item>
+        <item>Cloliform</item>
+        <item>E_Coli</item>
+        <item>CloDu</item>
+        <item>NgayCapNhat</item>
+        <item>GhiChu</item>
+    </string-array>
+    <string-array name="outFields_maudanhgia">
+        <item>IDDiemDanhGia</item>
+        <item>IDMauKiemNghiem</item>
+        <item>TenMau</item>
+        <item>TinhTrangMau</item>
+        <item>NgayNhanMau</item>
+        <item>ThoiGianThuNghiem</item>
+        <item>NguoiLayMau</item>
+        <item>DoMau</item>
+        <item>Mui</item>
+        <item>DoDuc</item>
+        <item>PH</item>
+        <item>DoCung</item>
+        <item>Clorua</item>
+        <item>Sat</item>
+        <item>Mangan</item>
+        <item>Nitrat</item>
+        <item>Nitrit</item>
+        <item>Sunphat</item>
+        <item>ChiSoPecmanganate</item>
+        <item>Cloliform</item>
+        <item>E_Coli</item>
+        <item>CloDu</item>
+        <item>NgayCapNhat</item>
+        <item>GhiChu</item>
+    </string-array>
+    <string-array name="unedit_Fields">
+        <item>OBJECTID</item>
+        <item>IDDiemDanhGia</item>
+        <item>IDMauKiemNghiem</item>
+        <item>NgayCapNhat</item>
+    </string-array>
+</resources>

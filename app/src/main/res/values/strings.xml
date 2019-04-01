@@ -1,0 +1,139 @@
+<resources>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="license">runtimelite,1000,rud6046938574,none,4N5X0H4AH5JB003AD169</string>
+    <string name="action_search">Tìm kiếm</string>
+
+    <string name="app_name">CLN Vĩnh Long</string>
+    <string name="btn_OK">OK</string>
+    <string name="btn_Accept">Cập nhật</string>
+    <string name="btn_Delete">Xóa</string>
+    <string name="btn_Cancel">Hủy</string>
+    <string name="btn_Esc">THOÁT</string>
+    <string name="title_layer">Điểm đánh giá nước</string>
+    <string name="title_add">Thêm</string>
+    <string name="people_info_title">Thông tin liên hệ</string>
+    <string name="hoten_field">Họ và tên</string>
+    <string name="sdt_field">Số điện thoại</string>
+    <string name="email_field">Thư điện tử</string>
+    <string name="address_field">Địa chỉ liên lạc</string>
+    <string name="suco_info_title">Thông tin liên hệ</string>
+    <string name="hinhanh_field">Hình ảnh đính kèm</string>
+
+    <string name="path_saveImage">.qlsc</string>
+    <string name="attachment">attachment</string>
+    <!--DeclngayCapNhatalue config begin-->
+    <!--Url-->
+
+    <!--Alias-->
+    <string name="alias_diemdanhgianuoc">Điểm đánh giá</string>
+    <string name="alias_maudanhgia">Mẫu đánh giá</string>
+    <!--Name-->
+    <string name="name_diemdanhgianuoc">DiemDanhGia</string>
+    <string name="name_maudanhgia">HoSo_MauDanhGia</string>
+    <string name="id_diemdanhgianuoc">diemdanhgiaLYR</string>
+    <string name="id_maudanhgia">maukiemnghiemTBL</string>
+    <!--DeclngayCapNhatalue config end-->
+
+    <!--Attribute begin-->
+    <string name="OBJECTID">OBJECTID</string>
+    <string name="IDDIEMDANHGIA">IDDiemDanhGia</string>
+    <string name="NGAY_CAP_NHAT">NgayCapNhat</string>
+    <!--Attribute end-->
+    <string name="DIACHI">DiaChi</string>
+
+    <!--Attribute MauKiemNghiem Begin-->TenMau
+    <string name="IDMAUKIEMNGHIEM">IDMauKiemNghiem</string>
+    <string name="TENMAU">TenMau</string>
+    <!--Attribute MauKiemNghiem End-->
+
+    <string name="title_danhsachcacdiemdanhgia">Danh sách các mẫu đánh giá</string>
+    <string name="title_danhsachmaukiemnghiem">Danh sách mẫu kiểm nghiệm</string>
+    <string name="tongloaitrangthai">tongloaitrangthai</string>
+    <string name="title_activity_tra_cuu">TraCuuActivity</string>
+    <string name="ket_qua_objectid">ket_qua_objectid</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!--thông báo-->
+    <string name="title_search">Tìm kiếm mọi thứ...</string>
+    <string name="location_permission_denied">Chưa có quyền truy cập vị trí</string>
+
+    <!--navigation-->
+    <string name="nav_tra_cuu">Tra cứu</string>
+    <string name="nav_log_out">Đăng xuất</string>
+    <string name="nav_thong_ke">Thống kê</string>
+    <string name="nav_thong_ke_tong_diem">Tổng số lượng: </string>
+    <string name="nav_thong_ke_chua_sua_chua">Chưa sửa chữa</string>
+    <string name="nav_thong_ke_dang_sua_chua">Đang sửa chữa</string>
+    <string name="nav_thong_ke_da_sua_chua">Đã sửa chữa</string>
+
+    <!--async-->
+    <string name="async_dang_xu_ly">Đang xử lý...</string>
+    <string name="async_dang_cap_nhat_giao_dien">Đang cập nhật giao diện...</string>
+
+
+    <string name="format_day_yearfirst">yyyy-MM-dd HH:mm:ss</string>
+    <string name="format_time_day_month_year">dd/MM/yyyy</string>
+
+
+    <!--display process status -->
+    <string name="DATA_SUCCESSFULLY_INSERTED">Thêm dữ liệu thành công</string>
+    <string name="FAILED_TO_INSERT_DATA">Thêm dữ liệu không thành công</string>
+    <string name="DATA_SUCCESSFULLY_DELETED">Xóa dữ liệu thành công </string>
+    <string name="DATA_SUCCESSFULLY_UPDATED">Cập nhật dữ liệu thành công </string>    <string name="FAILED_TO_DELETE_DATA">Xóa dữ liệu không thành công</string>
+
+    <string name="FAILED_TO_UPDATE_DATA">Cập nhật dữ liệu không thành công</string>
+    <string name="INCORRECT_INPUT_FORMAT">Số liệu nhập vào không đúng định dạng!!!</string>
+    <string name="name_nhanvien">Nhân viên A</string>
+    <string name="gmail_nhanvien">nva.tanhoa@gmail.com</string>
+
+    <!--preference begin-->
+    <string name="preference_username">username</string>
+    <string name="preference_password">pasword</string>
+    <string name="preference_displayname">displayname</string>
+    <!--preference end-->
+
+    <string name="action_logout">Đăng xuất</string>
+    <string name="validate_no_connect">Không có kết nối internet</string>
+    <string name="info_login_empty">Danh bạ hoặc mật khẩu không được để trống</string>
+    <string name="validate_login_fail">Sai danh bạ hoặc mật khẩu</string>
+    <string name="validate_hieuluc">Đồng hồ của khách hàng đã không còn hiệu lực\nVui lòng liên hệ công ty Cấp nước Tân Hòa\nđể biết thêm thông tin</string>
+    <string name="validate_tracuutiennuoc_invalidtime">Chưa đến đợt đọc số!\nVui lòng chọn thời gian khác để tra cứu</string>
+    <string name="sql_coloumn_login_status">status</string>
+
+
+
+    <!--sql column login begin-->
+    <string name="sql_coloumn_login_displayname">DisplayName</string>
+    <string name="sql_coloumn_login_username">Username</string>
+    <!--sql column login end-->
+
+    <string name="encode_string">DITAGIS*#</string>
+
+    <!--sql end-->
+    <string name="find_khachhHang_message">Đang lấy thông tin khách hàng…</string>
+    <string name="connect_message">Đang kết nối đến máy chủ…</string>
+    <string name="login_message">Đang kiểm tra thông tin đăng nhập…</string>
+
+
+    <string name="preparing">Đang khởi tạo bản đồ…</string>
+    <!--sql column login begin-->
+    <string name="sql_coloumn_sys_id">LayerID</string>
+    <string name="sql_coloumn_sys_title">LayerTitle</string>
+    <string name="sql_coloumn_sys_url">Url</string>
+    <string name="sql_coloumn_sys_iscreate">IsCreate</string>
+    <string name="sql_coloumn_sys_isdelete">IsDelete</string>
+    <string name="sql_coloumn_sys_isedit">IsEdit</string>
+    <string name="sql_coloumn_sys_isview">IsView</string>
+    <string name="sql_coloumn_sys_outfield">OutFields</string>
+    <string name="sql_coloumn_sys_definition">Definition</string>
+    <!--sql column login end-->
+    <string name="preference_login_api">preference_login_api</string>
+    <string name="IDLayer_Basemap">BASEMAP</string>
+    <string name="input_format_incorrect">Số liệu nhập vào không đúng định dạng!!!</string>
+    <string name="question_delete_point">Bạn có chắc chắn xóa điểm này?</string>
+    <string name="no_access_permissions">Tài khoản không có quyền truy cập ứng dụng!!!</string>
+
+
+
+</resources>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_update"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:background="@color/colorPrimary">
+
+        <TextView
+            android:id="@+id/txtTilePopup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textStyle="bold"
+            android:text="Thêm dữ liệu"
+            android:textColor="@color/colorBackground_1"
+            android:textSize="20sp" />
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/field_horizontal_margin">
+        <TextView
+            android:id="@+id/txtTinhTrangNuoc"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textSize="@dimen/font_size_textview"
+            android:text="Tình trạng nước"></TextView>
+        <Spinner
+            android:layout_width="match_parent"
+            android:id="@+id/spTinhTrangNuoc"
+            android:layout_weight="1"
+            android:layout_height="match_parent"></Spinner>
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/field_horizontal_margin">
+        <TextView
+            android:id="@+id/txtMauNuoc"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textSize="@dimen/font_size_textview"
+            android:text="Màu nước"></TextView>
+        <Spinner
+            android:layout_width="match_parent"
+            android:id="@+id/spMauNuoc"
+            android:layout_weight="1"
+            android:layout_height="match_parent"></Spinner>
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/field_horizontal_margin">
+        <TextView
+            android:id="@+id/txtMuiNuoc"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textSize="@dimen/font_size_textview"
+            android:text="Mùi nước"></TextView>
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:id="@+id/spMuiNuoc"
+            android:layout_weight="1"
+            android:layout_height="match_parent"></Spinner>
+    </LinearLayout>
+    <Button
+        android:id="@+id/btnAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thêm" />
+</LinearLayout>
