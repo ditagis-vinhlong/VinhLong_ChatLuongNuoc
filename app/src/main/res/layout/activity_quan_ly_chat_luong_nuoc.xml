@@ -19,7 +19,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_quan_ly_su_co"
-        app:menu="@menu/activity_quan_ly_su_co_drawer" />
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/activity_quan_ly_drawer" />
 
 </android.support.v4.widget.DrawerLayout>

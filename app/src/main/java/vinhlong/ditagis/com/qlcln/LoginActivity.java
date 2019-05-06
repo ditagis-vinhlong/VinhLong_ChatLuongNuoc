@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import vinhlong.ditagis.com.qlcln.async.NewLoginAsycn;
+import vinhlong.ditagis.com.qlcln.entities.DApplication;
 import vinhlong.ditagis.com.qlcln.entities.entitiesDB.User;
 import vinhlong.ditagis.com.qlcln.utities.CheckConnectInternet;
 import vinhlong.ditagis.com.qlcln.utities.Preference;
@@ -19,6 +20,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private TextView mTxtPassword;
     private boolean isLastLogin;
     private TextView mTxtValidation;
+    private DApplication dApplication;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +35,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mTxtPassword = findViewById(R.id.txtPassword);
         mTxtUsername.setText("test_cln");
         mTxtPassword.setText("test_cln");
-//        mTxtUsername.setText("cln");
-//        mTxtPassword.setText("ditagis@123");
+        dApplication = (DApplication) getApplication();
         mTxtValidation = findViewById(R.id.txt_login_validation);
         create();
     }
@@ -81,10 +82,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //        handleLoginSuccess(userName,passWord);
         final String finalUserName = userName;
         NewLoginAsycn loginAsycn = new NewLoginAsycn(this, output -> {
-            if (output != null)
+            if (output != null) {
                 handleLoginSuccess(output);
+                dApplication.setUser(output);
+            }
             else
-                handleLoginFail();
+            handleLoginFail();
         });
         loginAsycn.execute(userName, passWord);
     }
@@ -102,7 +105,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void handleLoginSuccess(User user) {
 
 
-        Preference.getInstance().savePreferences(getString(R.string.preference_username),user.getUserName());
+        Preference.getInstance().savePreferences(getString(R.string.preference_username), user.getUserName());
         Preference.getInstance().savePreferences(getString(R.string.preference_password), user.getPassWord());
         Preference.getInstance().savePreferences(getString(R.string.preference_displayname), user.getDisplayName());
         mTxtUsername.setText("");

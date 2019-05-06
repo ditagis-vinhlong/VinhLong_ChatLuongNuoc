@@ -18,14 +18,14 @@ public class DApplication extends Application {
 
 
 
-    private User userDangNhap;
+    private User user;
 
-    public User getUserDangNhap() {
-        return userDangNhap;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserDangNhap(User userDangNhap) {
-        this.userDangNhap = userDangNhap;
+    public void setUser(User user) {
+        this.user = user;
     }
 
 

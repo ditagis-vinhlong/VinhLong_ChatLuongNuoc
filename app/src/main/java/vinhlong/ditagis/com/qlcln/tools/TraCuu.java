@@ -75,12 +75,7 @@ public class TraCuu {
         traCuuChiTietDiemDanhGiaAdapter = new TraCuuChiTietDiemDanhGiaAdapter(mainActivity, items);
         insertQueryField();
         listView.setAdapter(traCuuChiTietDiemDanhGiaAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
-                editValueAttribute(parent, view, position, id);
-            }
-        });
+        listView.setOnItemClickListener((parent, view, position, id) -> editValueAttribute(parent, view, position, id));
         builder.setView(layout_table_tracuu);
         final AlertDialog dialog = builder.create();
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -373,15 +368,23 @@ public class TraCuu {
         List<TraCuuChiTietDiemDanhGiaAdapter.Item> items = new ArrayList<>();
         String[] queryFields = featureLayerDTG.getQueryFields();
         List<Field> fields = serviceFeatureTable.getFields();
-        for (String queryField : queryFields) {
-            for (Field field : fields) {
-                if (field.getName().equals(queryField)) {
-                    TraCuuChiTietDiemDanhGiaAdapter.Item item = new TraCuuChiTietDiemDanhGiaAdapter.Item();
-                    item.setFieldName(field.getName());
-                    item.setAlias(field.getAlias());
-                    item.setFieldType(field.getFieldType());
-                    items.add(item);
-                    break;
+        for (Field field : fields) {
+            if (queryFields[0].equals("*") || queryFields[0].equals("")) {
+                TraCuuChiTietDiemDanhGiaAdapter.Item item = new TraCuuChiTietDiemDanhGiaAdapter.Item();
+                item.setFieldName(field.getName());
+                item.setAlias(field.getAlias());
+                item.setFieldType(field.getFieldType());
+                items.add(item);
+            } else {
+                for (String queryField : queryFields) {
+                    if (field.getName().equals(queryField)) {
+                        TraCuuChiTietDiemDanhGiaAdapter.Item item = new TraCuuChiTietDiemDanhGiaAdapter.Item();
+                        item.setFieldName(field.getName());
+                        item.setAlias(field.getAlias());
+                        item.setFieldType(field.getFieldType());
+                        items.add(item);
+                        break;
+                    }
                 }
             }
         }

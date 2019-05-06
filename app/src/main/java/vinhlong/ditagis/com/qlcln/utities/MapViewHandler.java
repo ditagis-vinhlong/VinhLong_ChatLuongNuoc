@@ -417,39 +417,33 @@ public class MapViewHandler extends Activity {
                     feature.getAttributes().put(Constant.NGAY_CAP_NHAT, c);
                 }
                 ListenableFuture<Void> mapViewResult = mServiceFeatureTable.addFeatureAsync(feature);
-                mapViewResult.addDoneListener(new Runnable() {
-                    @Override
-                    public void run() {
-                        final ListenableFuture<List<FeatureEditResult>> listListenableEditAsync = mServiceFeatureTable.applyEditsAsync();
-                        listListenableEditAsync.addDoneListener(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    List<FeatureEditResult> featureEditResults = listListenableEditAsync.get();
-                                    if (featureEditResults.size() > 0) {
-                                        long objectId = featureEditResults.get(0).getObjectId();
-                                        final QueryParameters queryParameters = new QueryParameters();
-                                        final String query = "OBJECTID = " + objectId;
-                                        queryParameters.setWhereClause(query);
-                                        final ListenableFuture<FeatureQueryResult> feature = mServiceFeatureTable.queryFeaturesAsync(queryParameters);
-                                        feature.addDoneListener(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                addAttachment(feature);
-                                            }
-                                        });
+                mapViewResult.addDoneListener(() -> {
+                    final ListenableFuture<List<FeatureEditResult>> listListenableEditAsync = mServiceFeatureTable.applyEditsAsync();
+                    listListenableEditAsync.addDoneListener(() -> {
+                        try {
+                            List<FeatureEditResult> featureEditResults = listListenableEditAsync.get();
+                            if (featureEditResults.size() > 0) {
+                                long objectId = featureEditResults.get(0).getObjectId();
+                                final QueryParameters queryParameters = new QueryParameters();
+                                final String query = "OBJECTID = " + objectId;
+                                queryParameters.setWhereClause(query);
+                                final ListenableFuture<FeatureQueryResult> feature1 = mServiceFeatureTable.queryFeaturesAsync(queryParameters);
+                                feature1.addDoneListener(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        addAttachment(feature1);
                                     }
-                                } catch (InterruptedException e) {
-                                    notifyError();
-                                    e.printStackTrace();
-                                } catch (ExecutionException e) {
-                                    notifyError();
-                                    e.printStackTrace();
-                                }
-
+                                });
                             }
-                        });
-                    }
+                        } catch (InterruptedException e) {
+                            notifyError();
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            notifyError();
+                            e.printStackTrace();
+                        }
+
+                    });
                 });
             } catch (InterruptedException e) {
                 notifyError();

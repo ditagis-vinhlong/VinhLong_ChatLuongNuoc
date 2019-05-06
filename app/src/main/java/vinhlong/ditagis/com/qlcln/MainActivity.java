@@ -141,8 +141,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setOnClickListener();
         startGPS();
         startSignIn();
-    }
 
+    }
+    private void setLoginInfos() {
+        DApplication application = (DApplication) getApplication();
+        String displayName = application.getUser().getDisplayName();
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        View headerLayout = navigationView.getHeaderView(0);
+        TextView namenv = headerLayout.findViewById(R.id.namenv);
+        namenv.setText(displayName);
+    }
     private void startGPS() {
 
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -482,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String[] getFieldsDTG(String stringFields) {
         String[] returnFields = null;
         if (stringFields != null) {
-            if (stringFields == "*") {
+            if (stringFields.equals("*") || stringFields.equals("")) {
                 returnFields = new String[]{"*"};
             } else {
                 returnFields = stringFields.split(",");
@@ -819,6 +828,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     return;
                 } else {
                     initMapView();
+                    setLoginInfos();
                 }
                 break;
         }

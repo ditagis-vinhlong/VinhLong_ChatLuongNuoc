@@ -85,7 +85,6 @@
     <string name="FAILED_TO_UPDATE_DATA">Cập nhật dữ liệu không thành công</string>
     <string name="INCORRECT_INPUT_FORMAT">Số liệu nhập vào không đúng định dạng!!!</string>
     <string name="name_nhanvien">Nhân viên A</string>
-    <string name="gmail_nhanvien">nva.tanhoa@gmail.com</string>
 
     <!--preference begin-->
     <string name="preference_username">username</string>
