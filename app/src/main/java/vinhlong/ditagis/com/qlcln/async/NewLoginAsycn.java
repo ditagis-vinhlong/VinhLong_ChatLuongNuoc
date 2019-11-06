@@ -59,7 +59,7 @@ public class NewLoginAsycn extends AsyncTask<String, Void, User> {
         String urlWithParam = String.format("%s?%s", Constant.API_URL.LOGIN, urlParameters);
         try {
 //            + "&apiKey=" + API_KEY
-            URL url = new URL(urlWithParam);
+            URL url = new URL(Constant.API_URL.LOGIN);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             try {
                 conn.setRequestMethod("POST");

@@ -5,7 +5,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion '27.0.3'
     defaultConfig {
-        applicationId "com.ditagis.vinhlong.qlcln"
+        applicationId "com.ditagis.vinhlong.cln"
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
