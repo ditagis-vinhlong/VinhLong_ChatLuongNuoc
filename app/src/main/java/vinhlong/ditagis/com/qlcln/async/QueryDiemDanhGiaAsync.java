@@ -28,7 +28,7 @@ import vinhlong.ditagis.com.qlcln.utities.Constant;
  * Created by ThanLe on 4/16/2018.
  */
 
-public class QueryDiemDanhGiaAsync extends AsyncTask<String, List<DanhSachDiemDanhGiaAdapter.Item>, Void> {
+public class QueryDiemDanhGiaAsync extends AsyncTask<String, List<Feature>, Void> {
     private ProgressDialog dialog;
     private Context mContext;
     private ServiceFeatureTable serviceFeatureTable;
@@ -71,7 +71,6 @@ public class QueryDiemDanhGiaAsync extends AsyncTask<String, List<DanhSachDiemDa
 
     @Override
     protected Void doInBackground(String... params) {
-        final List<DanhSachDiemDanhGiaAdapter.Item> items = new ArrayList<>();
         final List<Feature> features = new ArrayList<>();
         QueryParameters queryParameters = new QueryParameters();
         String queryClause = params[0];
@@ -86,23 +85,12 @@ public class QueryDiemDanhGiaAsync extends AsyncTask<String, List<DanhSachDiemDa
 
                     while (iterator.hasNext()) {
                         Feature feature = (Feature) iterator.next();
-                        DanhSachDiemDanhGiaAdapter.Item item = new DanhSachDiemDanhGiaAdapter.Item();
-                        Map<String, Object> attributes = feature.getAttributes();
-                        item.setObjectID(attributes.get(mContext.getString(R.string.OBJECTID)).toString());
-                        item.setiDDiemDanhGia(attributes.get(mContext.getString(R.string.IDDIEMDANHGIA)).toString());
-                        String format_date = Constant.DATE_FORMAT.format(((Calendar) attributes.get(Constant.NGAY_CAP_NHAT)).getTime());
-                        item.setNgayCapNhat(format_date);
-                        item.setDiaChi(attributes.get(mContext.getString(R.string.DIACHI)).toString());
-                        items.add(item);
                         features.add(feature);
                     }
-                    delegate.processFinish(features);
-                    publishProgress(items);
+                    publishProgress(features);
 
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                   publishProgress(features);
                 }
             }
         });
@@ -110,7 +98,7 @@ public class QueryDiemDanhGiaAsync extends AsyncTask<String, List<DanhSachDiemDa
     }
 
     @Override
-    protected void onProgressUpdate(List<DanhSachDiemDanhGiaAdapter.Item>... values) {
+    protected void onProgressUpdate(List<Feature>... values) {
         danhSachDiemDanhGiaAdapter.clear();
         danhSachDiemDanhGiaAdapter.setItems(values[0]);
         danhSachDiemDanhGiaAdapter.notifyDataSetChanged();
@@ -121,18 +109,6 @@ public class QueryDiemDanhGiaAsync extends AsyncTask<String, List<DanhSachDiemDa
 
     }
 
-    private String getValueAttributes(Feature feature, String fieldName) {
-        if (feature.getAttributes().get(fieldName) != null)
-            return feature.getAttributes().get(fieldName).toString();
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void result) {
-        if (dialog != null || dialog.isShowing()) dialog.dismiss();
-        super.onPostExecute(result);
-
-    }
 
 }
 

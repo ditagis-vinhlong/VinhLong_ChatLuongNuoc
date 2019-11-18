@@ -68,7 +68,7 @@ public class QueryFeatureAsync extends AsyncTask<QueryParameters, List<Feature>,
                     publishProgress(features);
 
                 } catch (Exception e) {
-                    publishProgress();
+                    publishProgress(features);
                 }
             }
         });
@@ -79,7 +79,7 @@ public class QueryFeatureAsync extends AsyncTask<QueryParameters, List<Feature>,
     protected void onProgressUpdate(List<Feature>... values) {
         super.onProgressUpdate(values);
         if (dialog != null && dialog.isShowing()) dialog.dismiss();
-        if (values != null && values.length > 0) {
+        if (values != null ) {
             mDelegate.processFinish(values[0]);
 
         } else {

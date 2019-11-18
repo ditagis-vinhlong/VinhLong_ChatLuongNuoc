@@ -50,6 +50,8 @@ import android.widget.Toast;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.ArcGISRuntimeException;
+import com.esri.arcgisruntime.data.ArcGISFeature;
+import com.esri.arcgisruntime.data.Feature;
 import com.esri.arcgisruntime.data.ServiceFeatureTable;
 import com.esri.arcgisruntime.geometry.Geometry;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
@@ -219,14 +221,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.mListViewSearch = findViewById(R.id.lstview_search);
         //đưa listview search ra phía sau
         this.mListViewSearch.invalidate();
-        List<DanhSachDiemDanhGiaAdapter.Item> items = new ArrayList<>();
+        List<Feature> items = new ArrayList<>();
         this.danhSachDiemDanhGiaAdapter = new DanhSachDiemDanhGiaAdapter(MainActivity.this, items);
         this.mListViewSearch.setAdapter(danhSachDiemDanhGiaAdapter);
         this.mListViewSearch.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String objectID = ((DanhSachDiemDanhGiaAdapter.Item) parent.getItemAtPosition(position)).getObjectID();
-                mMapViewHandler.queryByObjectID(objectID);
+                Feature feature = (Feature) parent.getItemAtPosition(position);
+                popupInfos.showPopup((ArcGISFeature) feature);
                 danhSachDiemDanhGiaAdapter.clear();
                 danhSachDiemDanhGiaAdapter.notifyDataSetChanged();
             }

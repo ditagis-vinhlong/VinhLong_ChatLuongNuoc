@@ -1,5 +1,6 @@
 package vinhlong.ditagis.com.qlcln.utities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -218,25 +219,7 @@ public class MapViewHandler extends Activity {
                     Iterator iterator = result.iterator();
                     while (iterator.hasNext()) {
                         Feature item = (Feature) iterator.next();
-                        Map<String, Object> attributes = item.getAttributes();
-                        String format_date = "";
-                        String[] split = attributes.get(Constant.IDDIEM_DANH_GIA).toString().split("_");
-                        try {
-                            format_date = Constant.DATE_FORMAT.format((new GregorianCalendar(Integer.parseInt(split[3]), Integer.parseInt(split[2]), Integer.parseInt(split[1])).getTime()));
-                        } catch (Exception e) {
-
-                        }
-                        String diachi = "";
-                        try {
-                            diachi = attributes.get(Constant.DIACHI).toString();
-                        } catch (Exception e) {
-                        }
-                        DanhSachDiemDanhGiaAdapter.Item diemdanhgia = new DanhSachDiemDanhGiaAdapter.Item();
-                        diemdanhgia.setObjectID(attributes.get(Constant.OBJECTID).toString());
-                        diemdanhgia.setiDDiemDanhGia(attributes.get(Constant.IDDIEM_DANH_GIA).toString());
-                        diemdanhgia.setNgayCapNhat(format_date);
-                        diemdanhgia.setDiaChi(diachi);
-                        adapter.add(diemdanhgia);
+                        adapter.add(item);
                         adapter.notifyDataSetChanged();
                     }
                 } catch (InterruptedException e) {
@@ -269,7 +252,7 @@ public class MapViewHandler extends Activity {
         @Override
         protected Void doInBackground(Point... params) {
             final Point clickPoint = params[0];
-            final ListenableFuture<IdentifyLayerResult> identifyFuture = mMapView.identifyLayerAsync(suCoTanHoaLayer, mClickPoint, 5, false, 1);
+            @SuppressLint("WrongThread") final ListenableFuture<IdentifyLayerResult> identifyFuture = mMapView.identifyLayerAsync(suCoTanHoaLayer, mClickPoint, 5, false, 1);
             identifyFuture.addDoneListener(new Runnable() {
                 @Override
                 public void run() {

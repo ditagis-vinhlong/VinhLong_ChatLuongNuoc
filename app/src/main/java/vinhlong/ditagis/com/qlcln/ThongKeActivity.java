@@ -208,14 +208,14 @@ public class ThongKeActivity extends AppCompatActivity {
 
     private void getQueryDiemDanhGiaAsync(String whereClause) {
         ListView listView = (ListView) findViewById(R.id.listview);
-        final List<DanhSachDiemDanhGiaAdapter.Item> items = new ArrayList<>();
+        final List<Feature> items = new ArrayList<>();
         final DanhSachDiemDanhGiaAdapter adapter = new DanhSachDiemDanhGiaAdapter(this, items);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
                 Intent returnIntent = new Intent();
-                returnIntent.putExtra(getString(R.string.ket_qua_objectid), adapter.getItems().get(position).getObjectID());
+                returnIntent.putExtra(getString(R.string.ket_qua_objectid), adapter.getItems().get(position).getAttributes().get(ThongKeActivity.this.getString(R.string.OBJECTID)).toString());
                 setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             }

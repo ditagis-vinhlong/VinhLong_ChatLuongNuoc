@@ -14,13 +14,13 @@
             android:id="@+id/txt_tracuu_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="id"
+            android:text="Không có giá trị"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textStyle="bold" />
         <TextView
             android:id="@+id/txt_tracuu_ngaycapnhat"
             android:layout_gravity="end"
-            android:text="12-03-2018"
+            android:text="Không có giá trị"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             />
@@ -35,7 +35,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_weight="90"
-        android:text="phường 10, quận 5, TP.HCM"
+        android:text="Không có giá trị"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
 

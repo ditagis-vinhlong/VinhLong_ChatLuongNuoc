@@ -38,7 +38,6 @@ import vinhlong.ditagis.com.qlcln.MainActivity;
 import vinhlong.ditagis.com.qlcln.R;
 import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter;
 import vinhlong.ditagis.com.qlcln.adapter.TraCuuChiTietDiemDanhGiaAdapter;
-import vinhlong.ditagis.com.qlcln.async.NotifyTraCuuAdapterValueChangeAsync;
 import vinhlong.ditagis.com.qlcln.async.QueryDiemDanhGiaAsync;
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG;
 import vinhlong.ditagis.com.qlcln.utities.Popup;
@@ -165,7 +164,7 @@ public class TraCuu {
         final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity, android.R.style.Theme_Holo_Light_NoActionBar_Fullscreen);
         final View layout_table_tracuu = mainActivity.getLayoutInflater().inflate(R.layout.layout_title_listview, null);
         ListView listView = (ListView) layout_table_tracuu.findViewById(R.id.listview);
-        final List<DanhSachDiemDanhGiaAdapter.Item> items = new ArrayList<>();
+        final List<Feature> items = new ArrayList<>();
         final DanhSachDiemDanhGiaAdapter adapter = new DanhSachDiemDanhGiaAdapter(mainActivity, items);
         listView.setAdapter(adapter);
 
@@ -176,8 +175,7 @@ public class TraCuu {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
-                final DanhSachDiemDanhGiaAdapter.Item item = adapter.getItems().get(position);
-                Feature selectedFeature = getSelectedFeature(item.getObjectID());
+                Feature selectedFeature = adapter.getItems().get(position);
                 if (selectedFeature != null) {
                     dialog.dismiss();
                     popupInfos.setFeatureLayerDTG(featureLayerDTG);
@@ -354,7 +352,7 @@ public class TraCuu {
                     }
                 }
                 TraCuuChiTietDiemDanhGiaAdapter adapter = (TraCuuChiTietDiemDanhGiaAdapter) parent.getAdapter();
-                new NotifyTraCuuAdapterValueChangeAsync(mainActivity).execute(adapter);
+                adapter.notifyDataSetChanged();
                 dialog.dismiss();
             }
         });

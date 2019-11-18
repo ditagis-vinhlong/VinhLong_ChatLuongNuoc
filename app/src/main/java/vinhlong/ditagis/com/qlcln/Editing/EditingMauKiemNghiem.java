@@ -43,7 +43,6 @@ import vinhlong.ditagis.com.qlcln.MainActivity;
 import vinhlong.ditagis.com.qlcln.R;
 import vinhlong.ditagis.com.qlcln.adapter.ChiTietMauKiemNghiemAdapter;
 import vinhlong.ditagis.com.qlcln.adapter.MauKiemNghiemApdapter;
-import vinhlong.ditagis.com.qlcln.async.NotifyChiTietMauKiemNghiemAdapterChangeAsync;
 import vinhlong.ditagis.com.qlcln.async.RefreshTableMauKiemNghiemAsync;
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG;
 import vinhlong.ditagis.com.qlcln.utities.Constant;
@@ -700,7 +699,7 @@ public class EditingMauKiemNghiem implements RefreshTableMauKiemNghiemAsync.Asyn
                         }
                     }
                     ChiTietMauKiemNghiemAdapter adapter = (ChiTietMauKiemNghiemAdapter) parent.getAdapter();
-                    new NotifyChiTietMauKiemNghiemAdapterChangeAsync(mainActivity).execute(adapter);
+                    adapter.notifyDataSetChanged();
 //                    dialog.dismiss();
                 }
             });

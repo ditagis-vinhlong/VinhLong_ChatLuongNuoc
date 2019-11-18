@@ -1,6 +1,5 @@
 package vinhlong.ditagis.com.qlcln.utities;
 
-import android.app.DownloadManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -57,7 +56,6 @@ import vinhlong.ditagis.com.qlcln.MainActivity;
 import vinhlong.ditagis.com.qlcln.R;
 import vinhlong.ditagis.com.qlcln.adapter.FeatureViewMoreInfoAdapter;
 import vinhlong.ditagis.com.qlcln.async.EditAsync;
-import vinhlong.ditagis.com.qlcln.async.NotifyDataSetChangeAsync;
 import vinhlong.ditagis.com.qlcln.async.QueryFeatureAsync;
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG;
 
@@ -473,7 +471,7 @@ public class Popup extends AppCompatActivity implements View.OnClickListener {
                         }
                         dialog.dismiss();
                         FeatureViewMoreInfoAdapter adapter = (FeatureViewMoreInfoAdapter) parent.getAdapter();
-                        new NotifyDataSetChangeAsync(mainActivity).execute(adapter);
+                        adapter.notifyDataSetChanged();
                     }
                 });
                 builder.setView(layout);
