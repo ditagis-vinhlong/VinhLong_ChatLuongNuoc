@@ -4,10 +4,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.data.ArcGISFeature;
 import com.esri.arcgisruntime.data.CodedValue;
 import com.esri.arcgisruntime.data.CodedValueDomain;
 import com.esri.arcgisruntime.data.Domain;
+import com.esri.arcgisruntime.data.FeatureEditResult;
 import com.esri.arcgisruntime.data.FeatureType;
 import com.esri.arcgisruntime.data.ServiceFeatureTable;
 
@@ -15,6 +17,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import vinhlong.ditagis.com.qlcln.R;
 import vinhlong.ditagis.com.qlcln.adapter.FeatureViewMoreInfoAdapter;
@@ -24,23 +27,30 @@ import vinhlong.ditagis.com.qlcln.utities.Constant;
  * Created by ThanLe on 4/16/2018.
  */
 
-public class EditAsync extends AsyncTask<FeatureViewMoreInfoAdapter, Void, Void> {
+public class EditAsync extends AsyncTask<FeatureViewMoreInfoAdapter, Object, Void> {
     private ProgressDialog dialog;
     private Context mContext;
     private ServiceFeatureTable mServiceFeatureTable;
     private ArcGISFeature mSelectedArcGISFeature = null;
+    private AsyncResponse mDelegate;
 
-    public EditAsync(Context context, ServiceFeatureTable serviceFeatureTable, ArcGISFeature selectedArcGISFeature) {
+   public interface AsyncResponse {
+        void processFinish(Object o);
+    }
+
+    public EditAsync(Context context, ServiceFeatureTable serviceFeatureTable, ArcGISFeature selectedArcGISFeature,
+                     AsyncResponse response) {
         mContext = context;
         mServiceFeatureTable = serviceFeatureTable;
         mSelectedArcGISFeature = selectedArcGISFeature;
         dialog = new ProgressDialog(context, android.R.style.Theme_Material_Dialog_Alert);
+        mDelegate = response;
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        dialog.setMessage(mContext.getString(R.string.async_dang_xu_ly));
+        dialog.setMessage("Đang cập nhật...");
         dialog.setCancelable(false);
 
         dialog.show();
@@ -100,12 +110,20 @@ public class EditAsync extends AsyncTask<FeatureViewMoreInfoAdapter, Void, Void>
                     mServiceFeatureTable.updateFeatureAsync(mSelectedArcGISFeature).addDoneListener(new Runnable() {
                         @Override
                         public void run() {
-                            mServiceFeatureTable.applyEditsAsync().addDoneListener(new Runnable() {
+                            ListenableFuture<List<FeatureEditResult>> applyEditsAsync = mServiceFeatureTable.applyEditsAsync();
+                            applyEditsAsync.addDoneListener(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (dialog != null && dialog.isShowing()) {
-                                        dialog.dismiss();
+                                    try {
+                                        List<FeatureEditResult> featureEditResults = applyEditsAsync.get();
+                                        if (featureEditResults.size() > 0 && !featureEditResults.get(0).hasCompletedWithErrors()){
+                                            publishProgress(featureEditResults.get(0).getObjectId());
+                                        }
+                                        else publishProgress();
+                                    } catch (Exception e) {
+                                        publishProgress();
                                     }
+
                                 }
                             });
                         }
@@ -142,17 +160,18 @@ public class EditAsync extends AsyncTask<FeatureViewMoreInfoAdapter, Void, Void>
     }
 
     @Override
-    protected void onProgressUpdate(Void... values) {
+    protected void onProgressUpdate(Object... values) {
         super.onProgressUpdate(values);
-
+        if (values != null && values.length > 0) {
+            mDelegate.processFinish(values[0]);
+        } else {
+            mDelegate.processFinish(false);
+        }
+        if (dialog != null && dialog.isShowing()) {
+            dialog.dismiss();
+        }
     }
 
-
-    @Override
-    protected void onPostExecute(Void result) {
-        super.onPostExecute(result);
-
-    }
 
 }
 

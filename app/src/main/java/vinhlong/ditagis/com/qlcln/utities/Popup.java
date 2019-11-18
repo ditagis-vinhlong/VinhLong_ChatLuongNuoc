@@ -1,7 +1,9 @@
 package vinhlong.ditagis.com.qlcln.utities;
 
+import android.app.DownloadManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -28,10 +30,12 @@ import com.esri.arcgisruntime.data.ArcGISFeature;
 import com.esri.arcgisruntime.data.CodedValue;
 import com.esri.arcgisruntime.data.CodedValueDomain;
 import com.esri.arcgisruntime.data.Domain;
+import com.esri.arcgisruntime.data.Feature;
 import com.esri.arcgisruntime.data.FeatureEditResult;
 import com.esri.arcgisruntime.data.FeatureTable;
 import com.esri.arcgisruntime.data.FeatureType;
 import com.esri.arcgisruntime.data.Field;
+import com.esri.arcgisruntime.data.QueryParameters;
 import com.esri.arcgisruntime.data.ServiceFeatureTable;
 import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.geometry.Point;
@@ -54,6 +58,7 @@ import vinhlong.ditagis.com.qlcln.R;
 import vinhlong.ditagis.com.qlcln.adapter.FeatureViewMoreInfoAdapter;
 import vinhlong.ditagis.com.qlcln.async.EditAsync;
 import vinhlong.ditagis.com.qlcln.async.NotifyDataSetChangeAsync;
+import vinhlong.ditagis.com.qlcln.async.QueryFeatureAsync;
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG;
 
 public class Popup extends AppCompatActivity implements View.OnClickListener {
@@ -283,7 +288,36 @@ public class Popup extends AppCompatActivity implements View.OnClickListener {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditAsync editAsync = new EditAsync(mainActivity, mServiceFeatureTable, mSelectedArcGISFeature);
+                EditAsync editAsync = new EditAsync(mainActivity, mServiceFeatureTable, mSelectedArcGISFeature, new EditAsync.AsyncResponse() {
+                    @Override
+                    public void processFinish(Object o) {
+                        if (o instanceof Long){
+                            Snackbar.make(layout, "Cập nhật thành công!", Snackbar.LENGTH_SHORT).show();
+                            dialog.dismiss();
+
+                            //query lại điểm để hiển thị lên popup
+                            QueryParameters parameters = new QueryParameters();
+                            parameters.setReturnGeometry(true);
+                            parameters.setWhereClause(String.format("OBJECTID = %d", o));
+                            new QueryFeatureAsync(mainActivity, (ServiceFeatureTable) mSelectedArcGISFeature.getFeatureTable(), new QueryFeatureAsync.AsyncResponse() {
+                                @Override
+                                public void processFinish(List<Feature> features) {
+                                    if( features.size() > 0){
+                                        showPopup((ArcGISFeature) features.get(0));
+                                        dialog.dismiss();
+                                    }
+                                    else{
+                                        Snackbar.make(layout, "Có lỗi xảy ra", Snackbar.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            }).execute(parameters);
+                        }
+                        else{
+                            Snackbar.make(layout, "Cập nhật thất bại!", Snackbar.LENGTH_SHORT).show();
+                        }
+                    }
+                });
                 try {
                     editAsync.execute(adapter).get();
                     refressPopup();
