@@ -18,7 +18,7 @@ class DApplication : Application() {
     var statusCode = Constant.StatusCode.NORMAL.value
 
     var center: Point? = null
-    var bitmap: Bitmap? = null
+    var bitmaps: ArrayList<Bitmap>? = null
     var selectedAttachment: Attachment? = null
     var selectedBitmap: Bitmap? = null
     var user: User? = null

@@ -78,7 +78,7 @@ private val mServiceFeatureTable = mFeature.featureTable as ServiceFeatureTable
         super.onProgressUpdate(*values)
         mApplication.progressDialog?.dismiss()
         delegate!!.processFinish(values[0])
-        mApplication.bitmap = null
+        mApplication.bitmaps = null
     }
 
 

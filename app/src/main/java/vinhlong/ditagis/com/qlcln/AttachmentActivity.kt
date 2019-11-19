@@ -14,6 +14,8 @@ import vinhlong.ditagis.com.qlcln.adapter.FeatureViewMoreInfoAttachmentsAdapter
 import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.utities.DAlertDialog
 import vinhlong.ditagis.com.qlcln.utities.DBitmap
+import android.view.Menu
+import android.view.MenuItem
 
 
 class AttachmentActivity : AppCompatActivity() {
@@ -81,6 +83,23 @@ class AttachmentActivity : AppCompatActivity() {
         } catch (e: Exception) {
            DAlertDialog().show(this, e)
         }
+        
+    }
+    // create an action bar button
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
+        // If you don't have res/menu, just create a directory named "menu" inside res
+        menuInflater.inflate(R.menu.attachment, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
+    // handle button activities
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.getItemId()
+
+        if (id == R.id.action_add) {
+            // do something here
+        }
+        return super.onOptionsItemSelected(item)
+    }
 }

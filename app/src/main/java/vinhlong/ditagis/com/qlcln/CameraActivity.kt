@@ -27,6 +27,7 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
     private var mSurfaceHolder: SurfaceHolder? = null
     private lateinit var mApplication: DApplication
     private var mOrientation: Int = 0
+    private  lateinit var  mOrientationListener: OrientationEventListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -37,7 +38,7 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
         mSurfaceHolder!!.addCallback(this)
         mApplication = application as DApplication
         val DEBUG_TAG = "orientationp-----"
-        var  mOrientationListener = object : OrientationEventListener(this,
+          mOrientationListener = object : OrientationEventListener(this,
                 SensorManager.SENSOR_DELAY_NORMAL) {
 
             override fun onOrientationChanged(orientation: Int) {
@@ -106,8 +107,8 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
                 }
                 val resultBitmap = rotateBitmap(bitmap, (orientation  - 270 ) .toFloat())
 
-                mApplication.bitmap = resultBitmap
-
+                mApplication.bitmaps = arrayListOf(resultBitmap)
+                mOrientationListener.disable()
                 val intent = Intent(this@CameraActivity, ShowCaptureActivity::class.java)
                 this@CameraActivity.startActivityForResult(intent, Constant.Request.SHOW_CAPTURE)
 

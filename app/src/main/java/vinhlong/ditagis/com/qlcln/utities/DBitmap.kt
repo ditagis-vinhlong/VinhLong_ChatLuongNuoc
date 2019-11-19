@@ -7,7 +7,7 @@ import java.io.File
 import java.io.IOException
 
 class DBitmap {
-    private fun getDecreaseSizeBitmap(bitmap: Bitmap): Bitmap{
+    fun getDecreaseSizeBitmap(bitmap: Bitmap): Bitmap{
         val maxSize = 700.toFloat()
         var width = bitmap.width.toFloat()
         var height = bitmap.height.toFloat()

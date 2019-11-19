@@ -19,7 +19,7 @@ class ShowCaptureActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_show_capture)
         mApplication = application as DApplication
-        show_capture_imageView.setImageBitmap(mApplication!!.bitmap)
+        show_capture_imageView.setImageBitmap(mApplication!!.bitmaps!!.first())
     }
 
     fun onClick(view: View) {

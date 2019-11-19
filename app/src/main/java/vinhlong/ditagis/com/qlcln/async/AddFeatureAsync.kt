@@ -11,14 +11,17 @@ import com.esri.arcgisruntime.concurrent.ListenableFuture
 import com.esri.arcgisruntime.data.*
 import com.esri.arcgisruntime.geometry.Point
 import com.esri.arcgisruntime.tasks.geocode.LocatorTask
+import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.utities.Constant
 import vinhlong.ditagis.com.qlcln.utities.DAlertDialog
+import vinhlong.ditagis.com.qlcln.utities.DBitmap
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AddFeatureAsync(val mActivity: Activity, private val mImage: ByteArray,
+class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                       val mServiceFeatureTable: ServiceFeatureTable, val mDelegate: AsyncResponse) : AsyncTask<Point, Any, Void?>() {
     private val mDialog: ProgressDialog?
+    private val mApplication = mActivity.application as DApplication
     private var loc = LocatorTask("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer")
 
     init {
@@ -149,40 +152,45 @@ class AddFeatureAsync(val mActivity: Activity, private val mImage: ByteArray,
             result = feature.get()
             if (result!!.iterator().hasNext()) {
                 val arcGISFeature = result.iterator().next() as ArcGISFeature
-                val attachmentName = mActivity.getString(vinhlong.ditagis.com.qlcln.R.string.attachment) + "_" + System.currentTimeMillis() + ".png"
-                val addResult = arcGISFeature!!.addAttachmentAsync(mImage, Bitmap.CompressFormat.PNG.toString(), attachmentName)
-                addResult.addDoneListener {
-                    try {
-                        val attachment = addResult.get()
-                        if (attachment.size > 0) {
-                            val tableResult = mServiceFeatureTable.updateFeatureAsync(arcGISFeature!!)
-                            tableResult.addDoneListener {
-                                val updatedServerResult = mServiceFeatureTable.applyEditsAsync()
-                                updatedServerResult.addDoneListener {
-                                    var edits: List<FeatureEditResult>? = null
-                                    try {
-                                        edits = updatedServerResult.get()
-                                        if (edits!!.size > 0) {
-                                            if (!edits[0].hasCompletedWithErrors()) {
-                                                publishProgress(arcGISFeature)
+                var added: Int = 0
+                mBitmaps.forEach { bitmap ->
+                    run {
+                        val attachmentName = String.format(Constant.AttachmentName.ADD, mApplication.user!!.userName, System.currentTimeMillis())
+                        val addResult = arcGISFeature!!.addAttachmentAsync(DBitmap().getByteArray(bitmap), Bitmap.CompressFormat.PNG.toString(), attachmentName)
+                        addResult.addDoneListener {
+                            try {
+                                val attachment = addResult.get()
+                                added ++
+                                if( added == mBitmaps.size){
+                                    val tableResult = mServiceFeatureTable.updateFeatureAsync(arcGISFeature!!)
+                                    tableResult.addDoneListener {
+                                        val updatedServerResult = mServiceFeatureTable.applyEditsAsync()
+                                        updatedServerResult.addDoneListener {
+                                            var edits: List<FeatureEditResult>? = null
+                                            try {
+                                                edits = updatedServerResult.get()
+                                                if (edits!!.size > 0) {
+                                                    if (!edits[0].hasCompletedWithErrors()) {
+                                                        publishProgress(arcGISFeature)
+                                                    }
+                                                    else publishProgress("Thêm ảnh thất bại!")
+                                                }
+                                            } catch (e: Exception) {
+                                                publishProgress(e.toString())
                                             }
-                                            else publishProgress("Thêm ảnh thất bại!")
-                                        }
-                                    } catch (e: Exception) {
-                                       publishProgress(e.toString())
-                                    }
 
+                                        }
+                                    }
                                 }
+
+                            } catch (e: Exception) {
+                                publishProgress(e.toString())
                             }
                         }
-                        else publishProgress("Thêm ảnh thất bại!")
-
-                    } catch (e: Exception) {
-                        publishProgress(e.toString())
                     }
                 }
-//                val extent = arcGISFeature.getGeometry().extent
-//                mMapView.setViewpointGeometryAsync(extent)
+
+
             }
         } catch (e: Exception) {
             publishProgress(e.toString())

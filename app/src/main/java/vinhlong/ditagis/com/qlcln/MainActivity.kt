@@ -17,7 +17,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
 import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +30,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.CompoundButtonCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.darsh.multipleimageselect.activities.AlbumSelectActivity
+import com.darsh.multipleimageselect.helpers.Constants
+import com.darsh.multipleimageselect.models.Image
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment
 import com.esri.arcgisruntime.data.ArcGISFeature
 import com.esri.arcgisruntime.data.Feature
@@ -48,6 +53,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_quan_ly_chat_luong_nuoc.*
+import ru.whalemare.sheetmenu.SheetMenu
+import ru.whalemare.sheetmenu.layout.LinearLayoutProvider
 import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter
 import vinhlong.ditagis.com.qlcln.async.PreparingAsycn
 import vinhlong.ditagis.com.qlcln.entities.DApplication
@@ -59,7 +66,6 @@ import vinhlong.ditagis.com.qlcln.utities.*
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
@@ -561,22 +567,39 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 (findViewById<View>(R.id.layout_layer) as LinearLayout).visibility = View.INVISIBLE
                 (findViewById<View>(R.id.floatBtnLayer) as FloatingActionButton).visibility = View.VISIBLE
             }
-            R.id.img_layvitri -> {
-                mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
-                mMapViewHandler?.addGraphic(mApplication?.center!!)
-                //                mMapViewHandler.capture();
-                capture()
-            }
+
             R.id.floatBtnAdd -> {
                 mApplication?.statusCode = Constant.StatusCode.IS_ADDING.value
                 mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
                 mMapViewHandler?.addGraphic(mApplication?.center!!)
-                //                mMapViewHandler.capture();
-                capture()
-//                (findViewById<View>(R.id.linear_addfeature) as LinearLayout).visibility = View.VISIBLE
-//                (findViewById<View>(R.id.img_map_pin) as ImageView).visibility = View.VISIBLE
-//                (findViewById<View>(R.id.floatBtnAdd) as FloatingActionButton).visibility = View.GONE
-                mMapViewHandler!!.setClickBtnAdd(true)
+
+                SheetMenu(
+                        context = this,
+                        title = "Thêm ảnh",
+                        menu = R.menu.selection_method_add_attachment, // you can just pass menu resource if you need static items
+//  actions = listOf(ActionItem(id = 0, title = "Send mail", image = getDrawableIcon())), // or create ActionItem when you need dynamic titles of icons
+//  actions = listOf("Send mail", "Send telegram", "Receive parcel"), // also, you can simplify it by passing strings for showing only text of items
+                        layoutProvider = LinearLayoutProvider(), // linear layout enabled by default
+//  layoutProvider = GridLayoutProvider() // but if you need grid, you can do it
+//  layoutProvider = object: LayoutProvider { ... } // also, you can define your own layout
+                        onClick = { item ->
+                            run {
+                                when (item.id) {
+                                    R.id.selection_method_capture -> {
+                                        mMapViewHandler!!.setClickBtnAdd(true)
+                                        capture()
+                                    }
+                                    R.id.selection_method_pick -> {
+                                        mMapViewHandler!!.setClickBtnAdd(true)
+                                        pick()
+                                    }
+                                }
+                            }
+                        }
+,
+                        onCancel = { cancelAdd()}
+                ).show(this)
+
             }
             R.id.btn_add_feature_close -> {
                 (findViewById<View>(R.id.linear_addfeature) as LinearLayout).visibility = View.GONE
@@ -593,9 +616,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun capture() {
-        mApplication?.bitmap = null
+        mApplication?.bitmaps = null
         val cameraIntent = Intent(this, CameraActivity::class.java)
         startActivityForResult(cameraIntent, Constant.Request.CAMERA)
+
+
+    }
+
+    fun pick() {
+        mApplication?.bitmaps = null
+        val intent = Intent(this, AlbumSelectActivity::class.java)
+//set limit on number of images that can be selected, default is 10
+        intent.putExtra(Constants.INTENT_EXTRA_LIMIT, 3)
+        startActivityForResult(intent, Constants.REQUEST_CODE);
     }
 
     private fun getBitmap(path: String?): Bitmap? {
@@ -647,7 +680,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             `in`!!.close()
 
-            Log.d("", "bitmap size - width: " + b!!.width + ", height: " + b.height)
+            Log.d("", "bitmaps size - width: " + b!!.width + ", height: " + b.height)
             return b
         } catch (e: IOException) {
             Log.e("", e.message, e)
@@ -697,48 +730,46 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         when (requestCode) {
+            Constants.REQUEST_CODE -> if (resultCode == RESULT_OK && data != null) {
+                //The array list has the image paths of the selected images
+                val images: ArrayList<Image> = data.getParcelableArrayListExtra(Constants.INTENT_EXTRA_IMAGES)
+                var bitmaps = arrayListOf<Bitmap>()
+                images.forEach { image ->
+                    run {
+                        val imgFile = File(image.path);
+
+                        if (imgFile.exists()) {
+
+                            val myBitmap = BitmapFactory.decodeFile(imgFile.absolutePath)
+                            bitmaps.add(DBitmap().getDecreaseSizeBitmap(myBitmap))
+
+                        }
+                    }
+                }
+                mApplication?.bitmaps = bitmaps
+                try {
+                    if (mApplication?.featureLayerDiemDanhGia != null){
+                        mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
+                                mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+                    }
+                    else{
+
+                    }
+                } catch (e: Exception) {
+                    DAlertDialog().show(this@MainActivity, e)
+                }
+            }
             Constant.Request.CAMERA -> if (resultCode == Activity.RESULT_OK) {
-//                if (this.mUri != null) {
-//                    //                    Uri selectedImage = this.mUri;
-//                    //                    getContentResolver().notifyChange(selectedImage, null);
-//                    val bitmap = getBitmap(mUri!!.path)
-//                    try {
-//                        if (bitmap != null) {
-//                            val matrix = Matrix()
-//                            matrix.postRotate(90f)
-//                            val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-//                            val outputStream = ByteArrayOutputStream()
-//                            rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-//                            val image = outputStream.toByteArray()
-//                            Toast.makeText(this, "Đã lưu ảnh", Toast.LENGTH_SHORT).show()
-//                            mMapViewHandler!!.addFeature(image)
-//                            //Todo xóa ảnh
-//                        }
-//                    } catch (e: Exception) {
-//                    }
-//
-//                }
-//            } else if (resultCode == Activity.RESULT_CANCELED) {
-//                mMapView?.let { MySnackBar.make(it, "Hủy chụp ảnh", false) }
-//            } else {
-//                mMapView?.let { MySnackBar.make(it, "Lỗi khi chụp ảnh", false) }
 //            }
-                if (mApplication!!.bitmap != null) {
-//                        val bitmap = BitmapFactory.decodeByteArray(mApplication!!.capture, 0, mApplication!!.capture!!.size)
+                if (mApplication!!.bitmaps != null) {
                     try {
-//                            if (bitmap != null) {
-//                                mApplication.bitmap = bitmap
                         if (mApplication?.featureLayerDiemDanhGia != null){
                             mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
-
                                     mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
-
                         }
                         else{
 
                         }
-
-//                            }
                     } catch (e: Exception) {
                         DAlertDialog().show(this@MainActivity, e)
                     }

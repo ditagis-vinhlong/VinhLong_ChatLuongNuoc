@@ -112,7 +112,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
         dimissCallout()
         this.mSelectedArcGISFeature = arcGISFeature
         mApplication.selectedFeature = arcGISFeature
-        val featureLayer = mFeatureLayerDTG!!.featureLayer
+        val featureLayer = arcGISFeature.featureTable.featureLayer
         featureLayer.selectFeature(arcGISFeature)
         lstFeatureType = ArrayList()
         for (i in 0 until arcGISFeature.featureTable.featureTypes.size) {
@@ -466,9 +466,9 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
 
 //            when (mApplication.statusCode) {
 //                Constant.StatusCode.IS_ADDING.value ->
-            mMainActivity.getMapViewHandler()?.addFeature(point, mApplication.bitmap!!)
+            mMainActivity.getMapViewHandler()?.addFeature(point, mApplication.bitmaps!!)
 //                Constant.StatusCode.IS_CHANGING_GEOMETRY.value -> point?.let {
-//                    feature?.let { feature -> mMainActivity.getMapViewHandler()?.editFeature(it, feature, serviceFeatureTable!!, mApplication.bitmap) }
+//                    feature?.let { feature -> mMainActivity.getMapViewHandler()?.editFeature(it, feature, serviceFeatureTable!!, mApplication.bitmaps) }
 //                }
 //            }
 
@@ -481,7 +481,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
         if (mCallout.isShowing) {
             mCallout.dismiss()
         }
-        mApplication.bitmap = null
+        mApplication.bitmaps = null
         mMainActivity.getMapViewHandler()?.clearGraphics()
         mMainActivity.cancelAdd()
     }

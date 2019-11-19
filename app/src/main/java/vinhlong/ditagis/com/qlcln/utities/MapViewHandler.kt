@@ -127,8 +127,8 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 //        singleTapAdddFeatureAsync.execute(add_point)
 //    }
 
-    fun addFeature(point: Point?, bitmap: Bitmap) {
-        AddFeatureAsync(mMainActivity, DBitmap().getByteArray(bitmap), mServiceFeatureTable, object : AddFeatureAsync.AsyncResponse {
+    fun addFeature(point: Point?, bitmaps: ArrayList<Bitmap>) {
+        AddFeatureAsync(mMainActivity, bitmaps, mServiceFeatureTable, object : AddFeatureAsync.AsyncResponse {
             override fun processFinish(o: Any) {
                 if (o is ArcGISFeature) {
                     mApplication.selectedFeature = o
@@ -144,9 +144,9 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
         }).execute(point)
 
     }
-//    fun editFeature(point: Point, feature: Feature, serviceFeatureTable: ServiceFeatureTable?, bitmap: Bitmap?) {
+//    fun editFeature(point: Point, feature: Feature, serviceFeatureTable: ServiceFeatureTable?, bitmaps: Bitmap?) {
 ////        val editPoint = mMapView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).targetGeometry.extent.center
-//        EditGeometryAsync(mMainActivity, feature, serviceFeatureTable,bitmap, object : EditGeometryAsync.AsyncResponse {
+//        EditGeometryAsync(mMainActivity, feature, serviceFeatureTable,bitmaps, object : EditGeometryAsync.AsyncResponse {
 //            override fun processFinish(o: Any) {
 //
 //                if (o is Boolean) {
@@ -199,9 +199,6 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 
     fun onSingleTapMapView(e: MotionEvent) {
         val clickPoint = mMapView.screenToLocation(android.graphics.Point(Math.round(e.x), Math.round(e.y)))
-        if (isClickBtnAdd) {
-            mMapView.setViewpointCenterAsync(clickPoint, 10.0)
-        } else {
             mClickPoint = android.graphics.Point(e.x.toInt(), e.y.toInt())
             mSelectedArcGISFeature = null
             // get the point that was clicked and convert it to a point in map coordinates
@@ -215,7 +212,6 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 
             val singleTapMapViewAsync = SingleTapMapViewAsync(mMainActivity)
             singleTapMapViewAsync.execute(clickPoint)
-        }
     }
 
     fun queryByObjectID(objectID: String) {
