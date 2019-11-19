@@ -29,10 +29,6 @@ class FindLocationTask(@field:SuppressLint("StaticFieldLeak")
         this.mLatitude = mLatitude
     }
 
-    override fun onPreExecute() {
-        super.onPreExecute()
-    }
-
     override fun doInBackground(vararg params: String): List<DAddress>? {
         if (!Geocoder.isPresent())
             return null
@@ -46,8 +42,7 @@ class FindLocationTask(@field:SuppressLint("StaticFieldLeak")
                     lstLocation.add(DAddress(address.longitude, address.latitude,
                             address.subAdminArea, address.adminArea, address.getAddressLine(0)))
             } catch (ignored: IOException) {
-                //todo grpc failed
-                Log.e("error", ignored.toString())
+               return null
             }
 
         } else {
@@ -57,7 +52,7 @@ class FindLocationTask(@field:SuppressLint("StaticFieldLeak")
                     lstLocation.add(DAddress(address.longitude, address.latitude,
                             address.subAdminArea, address.adminArea, address.getAddressLine(0)))
             } catch (ignored: IOException) {
-                Log.e("error", ignored.toString())
+                return null
             }
 
         }

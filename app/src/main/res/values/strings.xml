@@ -55,7 +55,7 @@
     <string name="title_activity_settings">SettingsActivity</string>
 
     <!--thông báo-->
-    <string name="title_search">Tìm kiếm mọi thứ...</string>
+    <string name="title_search">Nhập địa chỉ...</string>
     <string name="location_permission_denied">Chưa có quyền truy cập vị trí</string>
 
     <!--navigation-->

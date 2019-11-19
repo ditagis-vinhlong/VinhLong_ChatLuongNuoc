@@ -27,11 +27,15 @@ import com.esri.arcgisruntime.mapping.view.Graphic
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay
 import com.esri.arcgisruntime.mapping.view.MapView
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol
+import kotlinx.android.synthetic.main.activity_quan_ly_chat_luong_nuoc.*
 import kotlinx.android.synthetic.main.content_quan_ly_su_co.*
 import vinhlong.ditagis.com.qlcln.MainActivity
 import vinhlong.ditagis.com.qlcln.R
 import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter
+import vinhlong.ditagis.com.qlcln.adapter.DiaChiAdapter
 import vinhlong.ditagis.com.qlcln.async.AddFeatureAsync
+import vinhlong.ditagis.com.qlcln.async.FindLocationTask
+import vinhlong.ditagis.com.qlcln.entities.DAddress
 import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG
 import java.util.concurrent.ExecutionException
@@ -291,7 +295,29 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
         }
 
     }
+    fun querySearchDiaChi(search: String, diaChiAdapter: DiaChiAdapter) {
+        diaChiAdapter.clear()
+        diaChiAdapter.notifyDataSetChanged()
+        mApplication.progressDialog.show(mMainActivity, mMainActivity.container_main, "Đang tìm địa chỉ...")
+        val findLocationAsycn = FindLocationTask(mMainActivity,
+                true, object : FindLocationTask.AsyncResponse {
+            override fun processFinish(output: List<DAddress>?) {
+                mApplication.progressDialog.dismiss()
+                if (output != null) {
+                    if (output.isNotEmpty()) {
+                        for (address in output) {
+                            diaChiAdapter.add(address)
+                            diaChiAdapter.notifyDataSetChanged()
+                        }
+                    } else {
+                        MySnackBar.make( mMainActivity.mapView, "Không tìm thấy địa chỉ", false)
+                    }
+                }
 
+            }
+        })
+        findLocationAsycn.execute(search)
+    }
     internal inner class SingleTapMapViewAsync(private val mContext: Context) : AsyncTask<Point, Void, Void>() {
         private val mDialog: ProgressDialog?
 

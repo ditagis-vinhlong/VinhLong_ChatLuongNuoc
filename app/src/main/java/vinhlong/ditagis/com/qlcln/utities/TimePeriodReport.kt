@@ -118,14 +118,14 @@ class TimePeriodReport(private val mContext: Context) {
         today = Date()
         calendar = Calendar.getInstance()
         items = arrayListOf()
-        items!!.add(ThongKeAdapter.Item(1, "Tất cả", null!!, null!!, null!!))
+        items!!.add(ThongKeAdapter.Item(1, "Tất cả", null, null, null))
         items!!.add(ThongKeAdapter.Item(2, "Tháng này", formatTimeToGMT(firstDayofMonth), formatTimeToGMT(lastDayofMonth), dayToFirstDayString(firstDayofMonth, lastDayofMonth)))
         items!!.add(ThongKeAdapter.Item(3, "Tháng trước", formatTimeToGMT(firstDayofLastMonth), formatTimeToGMT(lastDayofLastMonth), dayToFirstDayString(firstDayofLastMonth, lastDayofLastMonth)))
         items!!.add(ThongKeAdapter.Item(4, "3 tháng gần nhất", formatTimeToGMT(firstDayofLast3Months), formatTimeToGMT(lastDayofLast3Months), dayToFirstDayString(firstDayofLast3Months, lastDayofLast3Months)))
         items!!.add(ThongKeAdapter.Item(5, "6 tháng gần nhất", formatTimeToGMT(firstDayofLast6Months), formatTimeToGMT(lastDayofLast6Months), dayToFirstDayString(firstDayofLast6Months, lastDayofLast6Months)))
         items!!.add(ThongKeAdapter.Item(6, "Năm nay", formatTimeToGMT(firstDayofYear), formatTimeToGMT(lastDayofYear), dayToFirstDayString(firstDayofYear, lastDayofYear)))
         items!!.add(ThongKeAdapter.Item(7, "Năm trước", formatTimeToGMT(firstDayoflLastYear), formatTimeToGMT(lastDayofLastYear), dayToFirstDayString(firstDayoflLastYear, lastDayofLastYear)))
-        items!!.add(ThongKeAdapter.Item(8, "Tùy chỉnh", null!!, null!!, "-- - --"))
+        items!!.add(ThongKeAdapter.Item(8, "Tùy chỉnh", null, null, "-- - --"))
     }
 
     fun getItems(): List<ThongKeAdapter.Item>? {

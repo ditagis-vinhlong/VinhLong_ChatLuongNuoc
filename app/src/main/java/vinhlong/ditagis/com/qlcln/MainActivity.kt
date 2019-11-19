@@ -16,7 +16,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -34,8 +33,6 @@ import com.darsh.multipleimageselect.activities.AlbumSelectActivity
 import com.darsh.multipleimageselect.helpers.Constants
 import com.darsh.multipleimageselect.models.Image
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment
-import com.esri.arcgisruntime.data.ArcGISFeature
-import com.esri.arcgisruntime.data.Feature
 import com.esri.arcgisruntime.data.ServiceFeatureTable
 import com.esri.arcgisruntime.geometry.GeometryEngine
 import com.esri.arcgisruntime.geometry.SpatialReferences
@@ -53,10 +50,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_quan_ly_chat_luong_nuoc.*
+import kotlinx.android.synthetic.main.content_quan_ly_su_co.*
 import ru.whalemare.sheetmenu.SheetMenu
 import ru.whalemare.sheetmenu.layout.LinearLayoutProvider
-import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter
+import vinhlong.ditagis.com.qlcln.adapter.DiaChiAdapter
 import vinhlong.ditagis.com.qlcln.async.PreparingAsycn
+import vinhlong.ditagis.com.qlcln.entities.DAddress
 import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.entities.entitiesDB.ListObjectDB
 import vinhlong.ditagis.com.qlcln.libs.Action
@@ -64,8 +63,6 @@ import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG
 import vinhlong.ditagis.com.qlcln.tools.TraCuu
 import vinhlong.ditagis.com.qlcln.utities.*
 import java.io.File
-import java.io.IOException
-import java.io.InputStream
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
@@ -78,7 +75,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var mMapViewHandler: MapViewHandler? = null
     private var mTxtSearch: SearchView? = null
     private var mListViewSearch: ListView? = null
-    private var danhSachDiemDanhGiaAdapter: DanhSachDiemDanhGiaAdapter? = null
+    private var mDiaChiAdapter: DiaChiAdapter? = null
     private var taiSanImageLayers: ArcGISMapImageLayer? = null
     private var hanhChinhImageLayers: ArcGISMapImageLayer? = null
     private var mLinnearDisplayLayerTaiSan: LinearLayout? = null
@@ -198,14 +195,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         this.mListViewSearch = findViewById(R.id.lstview_search)
         //đưa listview search ra phía sau
         this.mListViewSearch!!.invalidate()
-        val items = ArrayList<Feature>()
-        this.danhSachDiemDanhGiaAdapter = DanhSachDiemDanhGiaAdapter(this@MainActivity, items)
-        this.mListViewSearch!!.adapter = danhSachDiemDanhGiaAdapter
+        val items = arrayListOf<DAddress>()
+        this.mDiaChiAdapter = DiaChiAdapter(this@MainActivity, items)
+        this.mListViewSearch!!.adapter = mDiaChiAdapter
         this.mListViewSearch!!.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
-            val feature = parent.getItemAtPosition(position) as Feature
-            mPopup!!.showPopup(feature as ArcGISFeature)
-            danhSachDiemDanhGiaAdapter!!.clear()
-            danhSachDiemDanhGiaAdapter!!.notifyDataSetChanged()
+            val dAddress = parent.getItemAtPosition(position) as DAddress
+            addFeature(dAddress)
+            mDiaChiAdapter!!.clear()
+            mDiaChiAdapter!!.notifyDataSetChanged()
         }
     }
 
@@ -297,6 +294,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun setFeatureService() {
         if (ListObjectDB.getInstance().lstFeatureLayerDTG!!.isEmpty()) return
         mFeatureLayerDTGS = ArrayList()
+        var featureLayerDTGMauDanhGia: FeatureLayerDTG? = null
         for (layerInfoDTG in ListObjectDB.getInstance().lstFeatureLayerDTG!!) {
             var url = layerInfoDTG.url
             if (!layerInfoDTG.url!!.startsWith("http"))
@@ -316,8 +314,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 featureLayer.isPopupEnabled = true
                 mMapViewHandler = MapViewHandler(featureLayerDTG, mMapView!!, this@MainActivity)
                 traCuu = TraCuu(featureLayerDTG, this@MainActivity)
+                featureLayerDTGMauDanhGia = featureLayerDTG
                 mApplication?.featureLayerDiemDanhGia = featureLayer
                 mFeatureLayerDTGS!!.add(featureLayerDTG)
+
                 mMap!!.operationalLayers.add(featureLayer)
             }
             if (layerInfoDTG.id != null && layerInfoDTG.id == getString(R.string.id_maudanhgia)) {
@@ -362,7 +362,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             return
         }
         mPopup = Popup(this@MainActivity, mMapView!!, mFeatureLayerDTGS as ArrayList<FeatureLayerDTG>, mCallout!!)
-
+        mPopup!!.setFeatureLayerDTG(featureLayerDTGMauDanhGia)
         mMapViewHandler!!.popupInfos = mPopup
         traCuu!!.setPopupInfos(mPopup!!)
         mMap!!.addDoneLoadingListener {
@@ -474,14 +474,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mTxtSearch!!.queryHint = getString(R.string.title_search)
         mTxtSearch!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                mListViewSearch?.let { mMapViewHandler!!.querySearch(query, it, danhSachDiemDanhGiaAdapter!!) }
+                mListViewSearch?.let { mMapViewHandler!!.querySearchDiaChi(query, mDiaChiAdapter!!) }
                 return false
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
                 if (newText.length == 0) {
-                    danhSachDiemDanhGiaAdapter!!.clear()
-                    danhSachDiemDanhGiaAdapter!!.notifyDataSetChanged()
+                    mDiaChiAdapter!!.clear()
+                    mDiaChiAdapter!!.notifyDataSetChanged()
                 }
                 return false
             }
@@ -523,10 +523,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun requestPermisson(): Boolean {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE), REQUEST_ID_IMAGE_CAPTURE)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA, Manifest.permission.READ_PHONE_STATE), REQUEST_ID_IMAGE_CAPTURE)
         }
-        return !(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
+        return !(Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
     }
 
     private fun goHome() {}
@@ -569,36 +572,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             R.id.floatBtnAdd -> {
-                mApplication?.statusCode = Constant.StatusCode.IS_ADDING.value
-                mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
-                mMapViewHandler?.addGraphic(mApplication?.center!!)
-
-                SheetMenu(
-                        context = this,
-                        title = "Thêm ảnh",
-                        menu = R.menu.selection_method_add_attachment, // you can just pass menu resource if you need static items
-//  actions = listOf(ActionItem(id = 0, title = "Send mail", image = getDrawableIcon())), // or create ActionItem when you need dynamic titles of icons
-//  actions = listOf("Send mail", "Send telegram", "Receive parcel"), // also, you can simplify it by passing strings for showing only text of items
-                        layoutProvider = LinearLayoutProvider(), // linear layout enabled by default
-//  layoutProvider = GridLayoutProvider() // but if you need grid, you can do it
-//  layoutProvider = object: LayoutProvider { ... } // also, you can define your own layout
-                        onClick = { item ->
-                            run {
-                                when (item.id) {
-                                    R.id.selection_method_capture -> {
-                                        mMapViewHandler!!.setClickBtnAdd(true)
-                                        capture()
-                                    }
-                                    R.id.selection_method_pick -> {
-                                        mMapViewHandler!!.setClickBtnAdd(true)
-                                        pick()
-                                    }
-                                }
-                            }
-                        }
-,
-                        onCancel = { cancelAdd()}
-                ).show(this)
+                addFeature()
 
             }
             R.id.btn_add_feature_close -> {
@@ -615,6 +589,47 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    fun addFeature(dAddress: DAddress? = null) {
+        mApplication?.statusCode = Constant.StatusCode.IS_ADDING.value
+        if (dAddress != null) {
+            mApplication?.center = dAddress.point
+            mapView.setViewpointCenterAsync(dAddress.point)
+        } else
+            mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
+        mMapViewHandler?.addGraphic(mApplication?.center!!)
+
+        if (mApplication?.featureLayerDiemDanhGia != null) {
+            mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
+                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+        } else {
+
+        }
+    }
+
+    fun showMenuAddAttachment() {
+        SheetMenu(
+                context = this,
+                title = "Thêm ảnh",
+                menu = R.menu.selection_method_add_attachment, // you can just pass menu resource if you need static items
+                layoutProvider = LinearLayoutProvider(), // linear layout enabled by default
+                onClick = { item ->
+                    run {
+                        when (item.id) {
+                            R.id.selection_method_capture -> {
+                                mMapViewHandler!!.setClickBtnAdd(true)
+                                capture()
+                            }
+                            R.id.selection_method_pick -> {
+                                mMapViewHandler!!.setClickBtnAdd(true)
+                                pick()
+                            }
+                        }
+                    }
+                }
+                ,
+                onCancel = { cancelAdd() }
+        ).show(this)
+    }
     fun capture() {
         mApplication?.bitmaps = null
         val cameraIntent = Intent(this, CameraActivity::class.java)
@@ -691,8 +706,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 mApplication?.bitmaps = bitmaps
                 try {
                     if (mApplication?.featureLayerDiemDanhGia != null){
-                        mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
-                                mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+//                        mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
+//                                mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+                        mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
                     }
                     else{
 
@@ -706,8 +722,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (mApplication!!.bitmaps != null) {
                     try {
                         if (mApplication?.featureLayerDiemDanhGia != null){
-                            mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
-                                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+//                            mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
+//                                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+                            mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
                         }
                         else{
 

@@ -68,7 +68,7 @@ class ThongKeAdapter(private val mContext: Context, private val items: MutableLi
 
         constructor() {}
 
-        constructor(id: Int, mota: String, thoigianbatdau: String, thoigianketthuc: String, thoigianhienthi: String) {
+        constructor(id: Int, mota: String, thoigianbatdau: String?, thoigianketthuc: String?, thoigianhienthi: String?) {
             this.id = id
             this.mota = mota
             this.thoigianbatdau = thoigianbatdau
