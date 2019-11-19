@@ -79,29 +79,41 @@
 
         <ImageButton
             android:id="@+id/imgBtn_viewtablethoigian"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/size_image"
+            android:layout_height="@dimen/size_image"
             android:background="@android:color/white"
             android:paddingRight="@dimen/padding_title_popup"
             android:src="@drawable/ic_table"
+            android:tint="@color/colorPrimary"
             android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/imgBtn_ViewMoreInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/size_image"
+            android:layout_height="@dimen/size_image"
             android:background="@android:color/white"
             android:paddingRight="@dimen/padding_title_popup"
             android:src="@drawable/ic_info"
+            android:tint="@color/colorPrimary"
             android:visibility="gone" />
+        <ImageButton
+            android:id="@+id/imgBtn_Attachment"
+            android:layout_width="@dimen/size_image"
+            android:layout_height="@dimen/size_image"
+            android:background="@android:color/white"
+            android:paddingRight="@dimen/padding_title_popup"
+            android:src="@drawable/ic_attachment"
+            android:tint="@color/colorPrimary"
+            />
 
         <ImageButton
             android:id="@+id/imgBtn_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/size_image"
+            android:layout_height="@dimen/size_image"
             android:background="@android:color/white"
             android:paddingRight="@dimen/padding_title_popup"
             android:src="@drawable/ic_delete"
+            android:tint="@android:color/holo_red_dark"
             android:visibility="gone" />
     </LinearLayout>
 

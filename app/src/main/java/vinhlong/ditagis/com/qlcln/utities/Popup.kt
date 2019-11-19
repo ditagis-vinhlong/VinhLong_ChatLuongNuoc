@@ -1,8 +1,8 @@
 package vinhlong.ditagis.com.qlcln.utities
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,25 +10,37 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.esri.arcgisruntime.data.*
 import com.esri.arcgisruntime.geometry.Envelope
+import com.esri.arcgisruntime.geometry.GeometryEngine
 import com.esri.arcgisruntime.geometry.Point
+import com.esri.arcgisruntime.geometry.SpatialReferences
 import com.esri.arcgisruntime.loadable.LoadStatus
 import com.esri.arcgisruntime.mapping.view.Callout
 import com.esri.arcgisruntime.mapping.view.MapView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_quan_ly_chat_luong_nuoc.*
+import kotlinx.android.synthetic.main.popup_diemdanhgianuoc.view.*
+import kotlinx.android.synthetic.main.search_address.view.*
+import vinhlong.ditagis.com.qlcln.AttachmentActivity
 import vinhlong.ditagis.com.qlcln.Editing.EditingMauKiemNghiem
 import vinhlong.ditagis.com.qlcln.MainActivity
 import vinhlong.ditagis.com.qlcln.R
 import vinhlong.ditagis.com.qlcln.adapter.FeatureViewMoreInfoAdapter
 import vinhlong.ditagis.com.qlcln.async.EditAsync
+import vinhlong.ditagis.com.qlcln.async.FindLocationTask
 import vinhlong.ditagis.com.qlcln.async.QueryFeatureAsync
+import vinhlong.ditagis.com.qlcln.entities.DAddress
+import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.atomic.AtomicReference
 
-class Popup(private val mainActivity: MainActivity, private val mMapView: MapView, layerDTGS: List<FeatureLayerDTG>, private val mCallout: Callout?) : AppCompatActivity(), View.OnClickListener {
+class Popup(private val mMainActivity: MainActivity, private val mMapView: MapView, layerDTGS: List<FeatureLayerDTG>, private val mCallout: Callout) : AppCompatActivity(), View.OnClickListener {
     private var mSelectedArcGISFeature: ArcGISFeature? = null
     private val mServiceFeatureTable: ServiceFeatureTable?
     private var mFeatureLayerDTG: FeatureLayerDTG? = null
@@ -38,12 +50,13 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
     private val featureLayerDTG_MauDanhGia: FeatureLayerDTG?
     private val editingMauKiemNghiem: EditingMauKiemNghiem
     private val format_yearfirst = SimpleDateFormat("yyyy/MM/dd ")
+    private val mApplication = mMainActivity.application as DApplication
 
     init {
-        this.mServiceFeatureTable = getServiceFeatureTable(layerDTGS, mainActivity.resources.getString(R.string.id_diemdanhgianuoc))
-        this.table_thoigiancln = getServiceFeatureTable(layerDTGS, mainActivity.resources.getString(R.string.name_maudanhgia))
-        this.featureLayerDTG_MauDanhGia = getFeatureLayerDTG(layerDTGS, mainActivity.resources.getString(R.string.id_maudanhgia))
-        this.editingMauKiemNghiem = this.mServiceFeatureTable?.let { EditingMauKiemNghiem(mainActivity, featureLayerDTG_MauDanhGia!!, it) }!!
+        this.mServiceFeatureTable = getServiceFeatureTable(layerDTGS, mMainActivity.resources.getString(R.string.id_diemdanhgianuoc))
+        this.table_thoigiancln = getServiceFeatureTable(layerDTGS, mMainActivity.resources.getString(R.string.name_maudanhgia))
+        this.featureLayerDTG_MauDanhGia = getFeatureLayerDTG(layerDTGS, mMainActivity.resources.getString(R.string.id_maudanhgia))
+        this.editingMauKiemNghiem = this.mServiceFeatureTable?.let { EditingMauKiemNghiem(mMainActivity, featureLayerDTG_MauDanhGia!!, it) }!!
 
     }
 
@@ -88,23 +101,24 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
     }
 
     fun dimissCallout() {
-        val featureLayer = mFeatureLayerDTG!!.featureLayer
-        featureLayer.clearSelection()
+        val featureLayer = mApplication.featureLayerDiemDanhGia
+        featureLayer?.clearSelection()
         if (mCallout != null && mCallout.isShowing) {
             mCallout.dismiss()
         }
     }
 
-    fun showPopup(mSelectedArcGISFeature: ArcGISFeature) {
+    fun showPopup(arcGISFeature: ArcGISFeature) {
         dimissCallout()
-        this.mSelectedArcGISFeature = mSelectedArcGISFeature
+        this.mSelectedArcGISFeature = arcGISFeature
+        mApplication.selectedFeature = arcGISFeature
         val featureLayer = mFeatureLayerDTG!!.featureLayer
-        featureLayer.selectFeature(mSelectedArcGISFeature)
+        featureLayer.selectFeature(arcGISFeature)
         lstFeatureType = ArrayList()
-        for (i in 0 until mSelectedArcGISFeature.featureTable.featureTypes.size) {
-            lstFeatureType!!.add(mSelectedArcGISFeature.featureTable.featureTypes[i].name)
+        for (i in 0 until arcGISFeature.featureTable.featureTypes.size) {
+            lstFeatureType!!.add(arcGISFeature.featureTable.featureTypes[i].name)
         }
-        val inflater = LayoutInflater.from(this.mainActivity.applicationContext)
+        val inflater = LayoutInflater.from(this.mMainActivity.applicationContext)
         linearLayout = inflater.inflate(R.layout.popup_diemdanhgianuoc, null) as LinearLayout
         linearLayout!!.findViewById<View>(R.id.imgbtn_popup_diem_danh_gia_nuoc_cancel)
                 .setOnClickListener { view -> if (mCallout != null && mCallout.isShowing) mCallout.dismiss() }
@@ -118,18 +132,23 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
 
             val imgBtn_viewtablethoigian = linearLayout!!.findViewById<View>(R.id.imgBtn_viewtablethoigian) as ImageButton
             imgBtn_viewtablethoigian.visibility = View.VISIBLE
-            (linearLayout!!.findViewById<View>(R.id.imgBtn_viewtablethoigian) as ImageButton).setOnClickListener { editingMauKiemNghiem.showDanhSachMauDanhGia(mSelectedArcGISFeature) }
+            (linearLayout!!.findViewById<View>(R.id.imgBtn_viewtablethoigian) as ImageButton).setOnClickListener { editingMauKiemNghiem.showDanhSachMauDanhGia(arcGISFeature) }
         }
         if (mFeatureLayerDTG!!.action!!.isDelete) {
             val imgBtn_delete = linearLayout!!.findViewById<View>(R.id.imgBtn_delete) as ImageButton
             imgBtn_delete.visibility = View.VISIBLE
             imgBtn_delete.setOnClickListener {
-                mSelectedArcGISFeature.featureTable.featureLayer.clearSelection()
+                arcGISFeature.featureTable.featureLayer.clearSelection()
                 deleteFeature()
             }
         }
+        linearLayout!!.imgBtn_Attachment.setOnClickListener {
+            val intent = Intent(mMainActivity, AttachmentActivity::class.java)
+            mMainActivity.startActivity(intent)
+        }
+
         linearLayout!!.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        val envelope = mSelectedArcGISFeature.geometry.extent
+        val envelope = arcGISFeature.geometry.extent
         val envelope1 = Envelope(Point(envelope.xMin, envelope.yMin + DELTA_MOVE_Y), Point(envelope.xMax, envelope.yMax + DELTA_MOVE_Y))
         mMapView.setViewpointGeometryAsync(envelope1, 0.0)
         // show CallOut
@@ -144,9 +163,9 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
 
     private fun viewMoreInfo() {
         val attr = mSelectedArcGISFeature!!.attributes
-        val builder = AlertDialog.Builder(mainActivity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen)
-        val layout = mainActivity.layoutInflater.inflate(R.layout.layout_viewmoreinfo_feature, null)
-        val adapter = FeatureViewMoreInfoAdapter(mainActivity, ArrayList())
+        val builder = AlertDialog.Builder(mMainActivity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen)
+        val layout = mMainActivity.layoutInflater.inflate(R.layout.layout_viewmoreinfo_feature, null)
+        val adapter = FeatureViewMoreInfoAdapter(mMainActivity, ArrayList())
         val lstView = layout.findViewById<ListView>(R.id.lstView_alertdialog_info)
         lstView.adapter = adapter
         lstView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id -> edit(parent, view, position, id) }
@@ -197,8 +216,8 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
         }
         builder.setView(layout)
         builder.setCancelable(false)
-        builder.setPositiveButton(mainActivity.getString(R.string.btn_Accept), null)
-        builder.setNeutralButton(mainActivity.getString(R.string.btn_Esc), null)
+        builder.setPositiveButton(mMainActivity.getString(R.string.btn_Accept), null)
+        builder.setNeutralButton(mMainActivity.getString(R.string.btn_Esc), null)
         val dialog = builder.create()
 
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -206,7 +225,7 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
         dialog.show()
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener { dialog.dismiss() }
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val editAsync = EditAsync(mainActivity, mServiceFeatureTable!!, mSelectedArcGISFeature!!,
+            val editAsync = EditAsync(mMainActivity, mServiceFeatureTable!!, mSelectedArcGISFeature!!,
                     object : EditAsync.AsyncResponse {
                         override fun processFinish(o: Any) {
                             if (o is Long) {
@@ -217,7 +236,7 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
                                 val parameters = QueryParameters()
                                 parameters.isReturnGeometry = true
                                 parameters.whereClause = String.format("OBJECTID = %d", o)
-                                QueryFeatureAsync(mainActivity, mSelectedArcGISFeature!!.featureTable as ServiceFeatureTable,
+                                QueryFeatureAsync(mMainActivity, mSelectedArcGISFeature!!.featureTable as ServiceFeatureTable,
                                         object: QueryFeatureAsync.AsyncResponse {
                                             override fun processFinish(o: List<Feature>) {
 
@@ -272,11 +291,11 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
         if (parent.getItemAtPosition(position) is FeatureViewMoreInfoAdapter.Item) {
             val item = parent.getItemAtPosition(position) as FeatureViewMoreInfoAdapter.Item
             if (item.isEdit) {
-                val builder = AlertDialog.Builder(mainActivity, android.R.style.Theme_Material_Light_Dialog_Alert)
+                val builder = AlertDialog.Builder(mMainActivity, android.R.style.Theme_Material_Light_Dialog_Alert)
                 builder.setTitle("Cập nhật thuộc tính")
                 builder.setMessage(item.alias)
                 builder.setCancelable(false).setNegativeButton("Hủy") { dialog, which -> dialog.dismiss() }
-                val layout = mainActivity.layoutInflater.inflate(R.layout.layout_dialog_update_feature_listview, null) as LinearLayout
+                val layout = mMainActivity.layoutInflater.inflate(R.layout.layout_dialog_update_feature_listview, null) as LinearLayout
 
                 val layoutTextView = layout.findViewById<FrameLayout>(R.id.layout_edit_viewmoreinfo_TextView)
                 val textView = layout.findViewById<TextView>(R.id.txt_edit_viewmoreinfo)
@@ -312,8 +331,8 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
                             layoutTextView.visibility = View.VISIBLE
                             textView.text = item.value
                             img_selectTime.setOnClickListener {
-                                val dialogView = View.inflate(mainActivity, R.layout.date_time_picker, null)
-                                val alertDialog = android.app.AlertDialog.Builder(mainActivity).create()
+                                val dialogView = View.inflate(mMainActivity, R.layout.date_time_picker, null)
+                                val alertDialog = android.app.AlertDialog.Builder(mMainActivity).create()
                                 dialogView.findViewById<View>(R.id.date_time_set).setOnClickListener {
                                     val datePicker = dialogView.findViewById<View>(R.id.date_picker) as DatePicker
                                     val calendar = GregorianCalendar(datePicker.year, datePicker.month, datePicker.dayOfMonth)
@@ -351,7 +370,7 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
                                 val x = java.lang.Double.parseDouble(editText.text.toString())
                                 item.value = editText.text.toString()
                             } catch (e: Exception) {
-                                Toast.makeText(mainActivity, R.string.input_format_incorrect, Toast.LENGTH_LONG).show()
+                                Toast.makeText(mMainActivity, R.string.input_format_incorrect, Toast.LENGTH_LONG).show()
                             }
 
                             Field.Type.TEXT -> item.value = editText.text.toString()
@@ -359,7 +378,7 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
                                 val x = java.lang.Short.parseShort(editText.text.toString())
                                 item.value = editText.text.toString()
                             } catch (e: Exception) {
-                                Toast.makeText(mainActivity, R.string.input_format_incorrect, Toast.LENGTH_LONG).show()
+                                Toast.makeText(mMainActivity, R.string.input_format_incorrect, Toast.LENGTH_LONG).show()
                             }
 
                         }
@@ -378,8 +397,97 @@ class Popup(private val mainActivity: MainActivity, private val mMapView: MapVie
 
     }
 
+    fun showPopupAddFeatureOrChangeGeometry(position: Point?, featureCSKD: Feature?, serviceFeatureTable: ServiceFeatureTable?) {
+        try {
+            if (position == null)
+                return
+            val longtitude = AtomicReference(0.0)
+            val latitdue = AtomicReference(0.0)
+            val address = AtomicReference("")
+//            var point: Point?
+
+            linearLayout = mMainActivity.layoutInflater.inflate(R.layout.search_address, mMainActivity.container_main, false) as LinearLayout
+            linearLayout!!.txt_dialog_search_address_title.text = "Thêm điểm"
+            val txtAdd = linearLayout!!.findViewById<View>(R.id.txt_search_address_add)
+            txtAdd.isEnabled = false
+            mCallout?.location = position
+            mCallout?.content = linearLayout!!
+            mMainActivity.runOnUiThread {
+                mCallout?.refresh()
+                if (!mCallout?.isShowing) mCallout?.show()
+            }
+
+
+            //set content layout
+            val txtAddress = linearLayout!!.findViewById<TextView>(R.id.txt_dialog_search_address_address)
+            txtAdd.setOnClickListener {
+                //                val pointLongLat = Point(longtitude.get(), latitdue.get())
+//                val geometry = GeometryEngine.project(pointLongLat, SpatialReferences.getWgs84())
+//                val geometry1 = GeometryEngine.project(geometry, SpatialReferences.getWebMercator())
+//                point = geometry1.extent.center
+                handlingAddFeatureOrChangeGeometry(position, address.get(), featureCSKD, serviceFeatureTable)
+            }
+            linearLayout!!.findViewById<ImageButton>(R.id.imgBtn_dialog_search_address_cancel)
+                    .setOnClickListener { handlingCancelAdd() }
+            @SuppressLint("InflateParams") val findLocationAsycn = FindLocationTask(mMainActivity, false,
+                    object : FindLocationTask.AsyncResponse {
+                        override fun processFinish(output: List<DAddress>?) {
+                            if (output != null && output.isNotEmpty()) {
+                                val dAddress = output[0]
+                                val addressLine = dAddress.location
+                                txtAddress.text = addressLine
+                                address.set(addressLine)
+                                longtitude.set(dAddress.longtitude)
+                                latitdue.set(dAddress.latitude)
+
+                                txtAdd.isEnabled = true
+                            }
+                        }
+                    })
+            val project = GeometryEngine.project(position, SpatialReferences.getWgs84())
+            val location = doubleArrayOf(project.extent.center.x, project.extent.center.y)
+            findLocationAsycn.setLongtitude(location[0])
+            findLocationAsycn.setLatitude(location[1])
+            findLocationAsycn.execute()
+
+
+        } catch (e: Exception) {
+            mApplication.progressDialog.dismiss()
+            DAlertDialog().show(mMainActivity, e)
+
+        }
+
+
+    }
+
+    private fun handlingAddFeatureOrChangeGeometry(point: Point?, address: String, feature: Feature?, serviceFeatureTable: ServiceFeatureTable?) {
+        try {  //call handlingcanceladd
+            mCallout?.dismiss()
+
+//            when (mApplication.statusCode) {
+//                Constant.StatusCode.IS_ADDING.value ->
+            mMainActivity.getMapViewHandler()?.addFeature(point, mApplication.bitmap!!)
+//                Constant.StatusCode.IS_CHANGING_GEOMETRY.value -> point?.let {
+//                    feature?.let { feature -> mMainActivity.getMapViewHandler()?.editFeature(it, feature, serviceFeatureTable!!, mApplication.bitmap) }
+//                }
+//            }
+
+        } catch (ex: Exception) {
+            DAlertDialog().show(mMainActivity, ex)
+        }
+    }
+
+    fun handlingCancelAdd() {
+        if (mCallout.isShowing) {
+            mCallout.dismiss()
+        }
+        mApplication.bitmap = null
+        mMainActivity.getMapViewHandler()?.clearGraphics()
+        mMainActivity.cancelAdd()
+    }
+
     private fun deleteFeature() {
-        val builder = AlertDialog.Builder(mainActivity, android.R.style.Theme_Material_Light_Dialog_Alert)
+        val builder = AlertDialog.Builder(mMainActivity, android.R.style.Theme_Material_Light_Dialog_Alert)
         builder.setTitle("Xác nhận")
         builder.setMessage(R.string.question_delete_point)
         builder.setPositiveButton("Có") { dialog, which ->

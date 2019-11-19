@@ -80,7 +80,8 @@
     <string name="DATA_SUCCESSFULLY_INSERTED">Thêm dữ liệu thành công</string>
     <string name="FAILED_TO_INSERT_DATA">Thêm dữ liệu không thành công</string>
     <string name="DATA_SUCCESSFULLY_DELETED">Xóa dữ liệu thành công </string>
-    <string name="DATA_SUCCESSFULLY_UPDATED">Cập nhật dữ liệu thành công </string>    <string name="FAILED_TO_DELETE_DATA">Xóa dữ liệu không thành công</string>
+    <string name="DATA_SUCCESSFULLY_UPDATED">Cập nhật dữ liệu thành công </string>
+    <string name="FAILED_TO_DELETE_DATA">Xóa dữ liệu không thành công</string>
 
     <string name="FAILED_TO_UPDATE_DATA">Cập nhật dữ liệu không thành công</string>
     <string name="INCORRECT_INPUT_FORMAT">Số liệu nhập vào không đúng định dạng!!!</string>
@@ -99,7 +100,6 @@
     <string name="validate_hieuluc">Đồng hồ của khách hàng đã không còn hiệu lực\nVui lòng liên hệ công ty Cấp nước Tân Hòa\nđể biết thêm thông tin</string>
     <string name="validate_tracuutiennuoc_invalidtime">Chưa đến đợt đọc số!\nVui lòng chọn thời gian khác để tra cứu</string>
     <string name="sql_coloumn_login_status">status</string>
-
 
 
     <!--sql column login begin-->
@@ -132,7 +132,6 @@
     <string name="input_format_incorrect">Số liệu nhập vào không đúng định dạng!!!</string>
     <string name="question_delete_point">Bạn có chắc chắn xóa điểm này?</string>
     <string name="no_access_permissions">Tài khoản không có quyền truy cập ứng dụng!!!</string>
-
 
 
 </resources>

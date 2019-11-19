@@ -31,4 +31,7 @@
     <dimen name="margin_small">8dp</dimen>
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_layout">20dp</dimen>
+    <dimen name="size_image">32dp</dimen>
+    <dimen name="size_capture_image">40dp</dimen>
+    <dimen name="margin_medium">16dp</dimen>
 </resources>

@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -17,7 +16,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
-import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -31,7 +29,6 @@ import androidx.core.view.GravityCompat
 import androidx.core.widget.CompoundButtonCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment
-import com.esri.arcgisruntime.ArcGISRuntimeException
 import com.esri.arcgisruntime.data.ArcGISFeature
 import com.esri.arcgisruntime.data.Feature
 import com.esri.arcgisruntime.data.ServiceFeatureTable
@@ -43,12 +40,14 @@ import com.esri.arcgisruntime.layers.FeatureLayer
 import com.esri.arcgisruntime.loadable.LoadStatus
 import com.esri.arcgisruntime.mapping.ArcGISMap
 import com.esri.arcgisruntime.mapping.Basemap
+import com.esri.arcgisruntime.mapping.Viewpoint
 import com.esri.arcgisruntime.mapping.view.Callout
-import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener
 import com.esri.arcgisruntime.mapping.view.LocationDisplay
 import com.esri.arcgisruntime.mapping.view.MapView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_quan_ly_chat_luong_nuoc.*
 import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter
 import vinhlong.ditagis.com.qlcln.async.PreparingAsycn
 import vinhlong.ditagis.com.qlcln.entities.DApplication
@@ -57,7 +56,6 @@ import vinhlong.ditagis.com.qlcln.libs.Action
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG
 import vinhlong.ditagis.com.qlcln.tools.TraCuu
 import vinhlong.ditagis.com.qlcln.utities.*
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -66,7 +64,7 @@ import java.util.*
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
     private var mUri: Uri? = null
-    private var popupInfos: Popup? = null
+    private var mPopup: Popup? = null
     private var mMapView: MapView? = null
     private var mMap: ArcGISMap? = null
     private var mCallout: Callout? = null
@@ -95,7 +93,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val table_thoigiancln: ServiceFeatureTable? = null
     private var mLocation: Location? = null
     private var mApplication: DApplication? = null
+    fun getMapViewHandler(): MapViewHandler? {
+        return this.mMapViewHandler
+    }
 
+    fun getPopUp(): Popup? {
+        return this.mPopup
+    }
+    fun isAddingFeatureOrChangingGeometry(): Boolean {
+        return mApplication?.statusCode == Constant.StatusCode.IS_ADDING.value ||
+                mApplication?.statusCode == Constant.StatusCode.IS_CHANGING_GEOMETRY.value
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quan_ly_chat_luong_nuoc)
@@ -189,7 +197,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         this.mListViewSearch!!.adapter = danhSachDiemDanhGiaAdapter
         this.mListViewSearch!!.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
             val feature = parent.getItemAtPosition(position) as Feature
-            popupInfos!!.showPopup(feature as ArcGISFeature)
+            mPopup!!.showPopup(feature as ArcGISFeature)
             danhSachDiemDanhGiaAdapter!!.clear()
             danhSachDiemDanhGiaAdapter!!.notifyDataSetChanged()
         }
@@ -204,7 +212,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setSupportActionBar(toolbar)
 
         requestPermisson()
-        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+        val drawer = container_main
         val toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer.addDrawerListener(toggle)
         toggle.syncState()
@@ -220,6 +228,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mMap = ArcGISMap(Basemap.Type.OPEN_STREET_MAP, LATITUDE, LONGTITUDE, LEVEL_OF_DETAIL)
         mMapView!!.map = mMap
         mCallout = mMapView!!.callout
+
         val preparingAsycn = PreparingAsycn(this, object : PreparingAsycn.AsyncResponse {
             override fun processFinish(output: Void?) {
 
@@ -231,33 +240,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             preparingAsycn.execute()
         val edit_latitude = findViewById<View>(R.id.edit_latitude) as EditText
         val edit_longtitude = findViewById<View>(R.id.edit_longtitude) as EditText
-        mMapView!!.onTouchListener = object : DefaultMapViewOnTouchListener(this, mMapView) {
-            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-                try {
-                    if (mMapViewHandler != null)
-                        mMapViewHandler!!.onSingleTapMapView(e!!)
-                } catch (ex: ArcGISRuntimeException) {
-                    Log.d("", ex.toString())
-                }
 
-                return super.onSingleTapConfirmed(e)
-            }
-
-            override fun onScroll(e1: MotionEvent, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-                if (mMapViewHandler != null) {
-                    val location = e2?.let { mMapViewHandler!!.onScroll(e1, it, distanceX, distanceY) }
-                    if (location != null) {
-                        edit_longtitude.setText(location[0].toString() + "")
-                        edit_latitude.setText(location[1].toString() + "")
-                    }
-                }
-                return super.onScroll(e1, e2, distanceX, distanceY)
-            }
-
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                return super.onScale(detector)
-            }
-        }
         changeStatusOfLocationDataSource()
         mLocationDisplay!!.addLocationChangedListener { locationChangedEvent ->
             val position = locationChangedEvent.location.position
@@ -306,7 +289,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setFeatureService() {
-        if (ListObjectDB.getInstance().lstFeatureLayerDTG!!.size == 0) return
+        if (ListObjectDB.getInstance().lstFeatureLayerDTG!!.isEmpty()) return
         mFeatureLayerDTGS = ArrayList()
         for (layerInfoDTG in ListObjectDB.getInstance().lstFeatureLayerDTG!!) {
             var url = layerInfoDTG.url
@@ -327,6 +310,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 featureLayer.isPopupEnabled = true
                 mMapViewHandler = MapViewHandler(featureLayerDTG, mMapView!!, this@MainActivity)
                 traCuu = TraCuu(featureLayerDTG, this@MainActivity)
+                mApplication?.featureLayerDiemDanhGia = featureLayer
                 mFeatureLayerDTGS!!.add(featureLayerDTG)
                 mMap!!.operationalLayers.add(featureLayer)
             }
@@ -371,10 +355,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mMapView?.let { MySnackBar.make(it, getString(R.string.no_access_permissions), true) }
             return
         }
-        popupInfos = Popup(this@MainActivity, mMapView!!, mFeatureLayerDTGS as ArrayList<FeatureLayerDTG>, mCallout)
+        mPopup = Popup(this@MainActivity, mMapView!!, mFeatureLayerDTGS as ArrayList<FeatureLayerDTG>, mCallout!!)
 
-        mMapViewHandler!!.popupInfos = popupInfos
-        traCuu!!.setPopupInfos(popupInfos!!)
+        mMapViewHandler!!.popupInfos = mPopup
+        traCuu!!.setPopupInfos(mPopup!!)
         mMap!!.addDoneLoadingListener {
             mLinnearDisplayLayerTaiSan = findViewById(R.id.linnearDisplayLayerTaiSan)
             mLinnearDisplayLayerBaseMap = findViewById(R.id.linnearDisplayLayerBaseMap)
@@ -469,7 +453,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onBackPressed() {
-        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+        val drawer = findViewById<View>(R.id.container_main) as DrawerLayout
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
         } else {
@@ -527,25 +511,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else if (id == R.id.nav_logOut) {
             startSignIn()
         }
-        val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+        val drawer = findViewById<DrawerLayout>(R.id.container_main)
         drawer.closeDrawer(GravityCompat.START)
         return true
     }
 
-    fun requestPermisson(): Boolean {
+    private fun requestPermisson(): Boolean {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE), REQUEST_ID_IMAGE_CAPTURE)
         }
-        return if (Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            false
-        } else
-            true
+        return !(Build.VERSION.SDK_INT >= 23 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
     }
 
     private fun goHome() {}
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             mLocationDisplay!!.startAsync()
 
         } else {
@@ -580,13 +561,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 (findViewById<View>(R.id.layout_layer) as LinearLayout).visibility = View.INVISIBLE
                 (findViewById<View>(R.id.floatBtnLayer) as FloatingActionButton).visibility = View.VISIBLE
             }
-            R.id.img_layvitri ->
+            R.id.img_layvitri -> {
+                mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
+                mMapViewHandler?.addGraphic(mApplication?.center!!)
                 //                mMapViewHandler.capture();
                 capture()
+            }
             R.id.floatBtnAdd -> {
-                (findViewById<View>(R.id.linear_addfeature) as LinearLayout).visibility = View.VISIBLE
-                (findViewById<View>(R.id.img_map_pin) as ImageView).visibility = View.VISIBLE
-                (findViewById<View>(R.id.floatBtnAdd) as FloatingActionButton).visibility = View.GONE
+                mApplication?.statusCode = Constant.StatusCode.IS_ADDING.value
+                mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
+                mMapViewHandler?.addGraphic(mApplication?.center!!)
+                //                mMapViewHandler.capture();
+                capture()
+//                (findViewById<View>(R.id.linear_addfeature) as LinearLayout).visibility = View.VISIBLE
+//                (findViewById<View>(R.id.img_map_pin) as ImageView).visibility = View.VISIBLE
+//                (findViewById<View>(R.id.floatBtnAdd) as FloatingActionButton).visibility = View.GONE
                 mMapViewHandler!!.setClickBtnAdd(true)
             }
             R.id.btn_add_feature_close -> {
@@ -604,15 +593,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun capture() {
-        val cameraIntent = Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI.path)
-
-        val photo = ImageFile.getFile(this)
-        //        this.mUri= FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".my.package.name.provider", photo);
-        this.mUri = Uri.fromFile(photo)
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, this.mUri)
-        //        this.mUri = Uri.fromFile(photo);
-        startActivityForResult(cameraIntent, REQUEST_ID_IMAGE_CAPTURE)
+        mApplication?.bitmap = null
+        val cameraIntent = Intent(this, CameraActivity::class.java)
+        startActivityForResult(cameraIntent, Constant.Request.CAMERA)
     }
 
     private fun getBitmap(path: String?): Bitmap? {
@@ -714,31 +697,58 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         when (requestCode) {
-            REQUEST_ID_IMAGE_CAPTURE -> if (resultCode == Activity.RESULT_OK) {
-                if (this.mUri != null) {
-                    //                    Uri selectedImage = this.mUri;
-                    //                    getContentResolver().notifyChange(selectedImage, null);
-                    val bitmap = getBitmap(mUri!!.path)
+            Constant.Request.CAMERA -> if (resultCode == Activity.RESULT_OK) {
+//                if (this.mUri != null) {
+//                    //                    Uri selectedImage = this.mUri;
+//                    //                    getContentResolver().notifyChange(selectedImage, null);
+//                    val bitmap = getBitmap(mUri!!.path)
+//                    try {
+//                        if (bitmap != null) {
+//                            val matrix = Matrix()
+//                            matrix.postRotate(90f)
+//                            val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+//                            val outputStream = ByteArrayOutputStream()
+//                            rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+//                            val image = outputStream.toByteArray()
+//                            Toast.makeText(this, "Đã lưu ảnh", Toast.LENGTH_SHORT).show()
+//                            mMapViewHandler!!.addFeature(image)
+//                            //Todo xóa ảnh
+//                        }
+//                    } catch (e: Exception) {
+//                    }
+//
+//                }
+//            } else if (resultCode == Activity.RESULT_CANCELED) {
+//                mMapView?.let { MySnackBar.make(it, "Hủy chụp ảnh", false) }
+//            } else {
+//                mMapView?.let { MySnackBar.make(it, "Lỗi khi chụp ảnh", false) }
+//            }
+                if (mApplication!!.bitmap != null) {
+//                        val bitmap = BitmapFactory.decodeByteArray(mApplication!!.capture, 0, mApplication!!.capture!!.size)
                     try {
-                        if (bitmap != null) {
-                            val matrix = Matrix()
-                            matrix.postRotate(90f)
-                            val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-                            val outputStream = ByteArrayOutputStream()
-                            rotatedBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-                            val image = outputStream.toByteArray()
-                            Toast.makeText(this, "Đã lưu ảnh", Toast.LENGTH_SHORT).show()
-                            mMapViewHandler!!.addFeature(image)
-                            //Todo xóa ảnh
-                        }
-                    } catch (e: Exception) {
-                    }
+//                            if (bitmap != null) {
+//                                mApplication.bitmap = bitmap
+                        if (mApplication?.featureLayerDiemDanhGia != null){
+                            mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
 
+                                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+
+                        }
+                        else{
+
+                        }
+
+//                            }
+                    } catch (e: Exception) {
+                        DAlertDialog().show(this@MainActivity, e)
+                    }
                 }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                mMapView?.let { MySnackBar.make(it, "Hủy chụp ảnh", false) }
+//                    }
             } else {
-                mMapView?.let { MySnackBar.make(it, "Lỗi khi chụp ảnh", false) }
+                //todo: clear graphic
+                cancelAdd()
+
+                Snackbar.make(container_main, "Hủy chụp ảnh", Snackbar.LENGTH_LONG).show()
             }
             Constant.REQUEST_LOGIN -> if (Activity.RESULT_OK != resultCode) {
                 finish()
@@ -750,6 +760,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    fun cancelAdd() {
+        mApplication?.statusCode = Constant.StatusCode.CANCEL_ADD.value
+        mMapViewHandler?.clearGraphics()
+    }
     companion object {
         private val LATITUDE = 10.10299
         private val LONGTITUDE = 105.9295304

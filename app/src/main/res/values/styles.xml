@@ -65,5 +65,37 @@
 
     </style>
 
+    <style name="DDialogBuilder" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
 
+    <style name="MyTextAppearance.White" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="MyTextAppearance.White.Small" parent="MyTextAppearance.White">
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="MyTextAppearance.White.Bold" parent="MyTextAppearance.White">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="MyTextAppearance.Black" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@android:color/black</item>
+
+    </style>
+    <style name="MyTextAppearance.Prime" parent="@android:style/TextAppearance">
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="MyTextAppearance.Prime.Small" parent="MyTextAppearance.Prime">
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="MyTextAppearance.Prime.Big" parent="MyTextAppearance.Prime">
+        <item name="android:textSize">20sp</item>
+    </style>
 </resources>

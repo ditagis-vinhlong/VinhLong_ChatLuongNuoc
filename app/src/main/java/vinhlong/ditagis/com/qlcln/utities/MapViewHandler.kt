@@ -5,14 +5,15 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.AsyncTask
-import android.os.Build
-import androidx.annotation.RequiresApi
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.widget.ListView
-import com.esri.arcgisruntime.concurrent.ListenableFuture
+import android.widget.Toast
+import com.esri.arcgisruntime.ArcGISRuntimeException
 import com.esri.arcgisruntime.data.*
 import com.esri.arcgisruntime.geometry.Envelope
 import com.esri.arcgisruntime.geometry.GeometryEngine
@@ -21,59 +22,173 @@ import com.esri.arcgisruntime.geometry.SpatialReferences
 import com.esri.arcgisruntime.layers.FeatureLayer
 import com.esri.arcgisruntime.mapping.ArcGISMap
 import com.esri.arcgisruntime.mapping.Viewpoint
+import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener
+import com.esri.arcgisruntime.mapping.view.Graphic
+import com.esri.arcgisruntime.mapping.view.GraphicsOverlay
 import com.esri.arcgisruntime.mapping.view.MapView
-import com.esri.arcgisruntime.tasks.geocode.LocatorTask
+import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol
+import kotlinx.android.synthetic.main.content_quan_ly_su_co.*
+import vinhlong.ditagis.com.qlcln.MainActivity
 import vinhlong.ditagis.com.qlcln.R
 import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter
+import vinhlong.ditagis.com.qlcln.async.AddFeatureAsync
+import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.ExecutionException
+import kotlin.math.roundToInt
 
 
 /**
  * Created by ThanLe on 2/2/2018.
  */
 
-class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val mMapView: MapView, private val mContext: Context) : Activity() {
-    private val mMap: ArcGISMap
-    private val suCoTanHoaLayer: FeatureLayer
-    internal var loc = LocatorTask("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer")
+class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val mMapView: MapView, private val mMainActivity: MainActivity) : Activity() {
+    private var mGraphicsOverlay: GraphicsOverlay = GraphicsOverlay()
+    private val mMap: ArcGISMap = mMapView.map
+    private val suCoTanHoaLayer: FeatureLayer = mFeatureLayerDTG.featureLayer
+    private val mApplication = mMainActivity.application as DApplication
     private var mClickPoint: android.graphics.Point? = null
     private var mSelectedArcGISFeature: ArcGISFeature? = null
     private var isClickBtnAdd = false
-    private val mServiceFeatureTable: ServiceFeatureTable
+    private val mServiceFeatureTable: ServiceFeatureTable = mFeatureLayerDTG.featureLayer.featureTable as ServiceFeatureTable
     var popupInfos: Popup? = null
 
-    private val dateString: String
-        @RequiresApi(api = Build.VERSION_CODES.N)
-        get() {
-            val timeStamp = Constant.DATE_FORMAT.format(Calendar.getInstance().time)
-
-            val writeDate = SimpleDateFormat("dd_MM_yyyy HH:mm:ss")
-            writeDate.timeZone = TimeZone.getTimeZone("GMT+07:00")
-            return writeDate.format(Calendar.getInstance().time)
-        }
-
-    private val timeID: String
-        get() = Constant.DDMMYYYY.format(Calendar.getInstance().time)
-
     init {
-        this.mServiceFeatureTable = mFeatureLayerDTG.featureLayer.featureTable as ServiceFeatureTable
-        this.mMap = mMapView.map
-        this.suCoTanHoaLayer = mFeatureLayerDTG.featureLayer
+        mMapView.graphicsOverlays.add(mGraphicsOverlay)
+        mMapView.onTouchListener = object : DefaultMapViewOnTouchListener(mMainActivity, mMapView) {
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                try {
+                    onSingleTapMapView(e!!)
+                } catch (ex: ArcGISRuntimeException) {
+                    Log.d("", ex.toString())
+                }
+
+                return super.onSingleTapConfirmed(e)
+            }
+
+            override fun onScroll(e1: MotionEvent, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+                if (mMainActivity.isAddingFeatureOrChangingGeometry()) {
+                    val center: Point = mMainActivity.mapView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).targetGeometry.extent.center
+                    addGraphic(center)
+                    if (mMainActivity.mapView.callout.isShowing) mMainActivity.mapView.callout.dismiss()
+                } else clearGraphics()
+                return super.onScroll(e1, e2, distanceX, distanceY)
+            }
+
+            override fun onUp(e: MotionEvent?): Boolean {
+                handlingOnUpTouchOrDoneLocate()
+                return super.onUp(e)
+            }
+
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                return super.onScale(detector)
+            }
+        }
     }
 
+    fun handlingOnUpTouchOrDoneLocate() {
+        if (mMainActivity.isAddingFeatureOrChangingGeometry()) {
+            if (mMainActivity.mapView.callout.isShowing) mMainActivity.mapView.callout.dismiss()
+            showPopUpLocation()
+        }
+//        showLatLong()
+    }
+    fun showPopUpLocation(vararg e: MotionEvent) {
+        try {
+            val center: Point
+            if (e.isEmpty())
+                mApplication.center = mMainActivity.mapView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).targetGeometry.extent.center
+            else {
+                mApplication.center = mMainActivity.mapView.screenToLocation(android.graphics.Point(e[0].x.roundToInt(), e[0].y.roundToInt()))
+                mMainActivity.mapView.setViewpointCenterAsync(mApplication.center)
+            }
+            addGraphic(mApplication.center!!)
+            if (mApplication?.featureLayerDiemDanhGia != null){
+                mMainActivity.getPopUp()!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
+
+                        mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
+
+            }
+            else{
+
+            }
+
+        } catch (ex: Exception) {
+            Toast.makeText(mMainActivity.mapView.context, "Có lỗi xảy ra khi hiển thị cửa sổ", Toast.LENGTH_LONG).show()
+        }
+    }
     fun setClickBtnAdd(clickBtnAdd: Boolean) {
         isClickBtnAdd = clickBtnAdd
     }
 
-    fun addFeature(image: ByteArray) {
-        val singleTapAdddFeatureAsync = SingleTapAdddFeatureAsync(mContext, image)
-        val add_point = mMapView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).targetGeometry.extent.center
-        singleTapAdddFeatureAsync.execute(add_point)
+//    fun addFeature(image: ByteArray) {
+//        val singleTapAdddFeatureAsync = SingleTapAdddFeatureAsync(mMainActivity, image)
+//        val add_point = mMapView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).targetGeometry.extent.center
+//        singleTapAdddFeatureAsync.execute(add_point)
+//    }
+
+    fun addFeature(point: Point?, bitmap: Bitmap) {
+        AddFeatureAsync(mMainActivity, DBitmap().getByteArray(bitmap), mServiceFeatureTable, object : AddFeatureAsync.AsyncResponse {
+            override fun processFinish(o: Any) {
+                if (o is ArcGISFeature) {
+                    mApplication.selectedFeature = o
+                    mMainActivity.getPopUp()!!.showPopup(mApplication.selectedFeature as ArcGISFeature)
+                    mMainActivity.getPopUp()?.handlingCancelAdd()
+
+                    DAlertDialog().show(mMainActivity, "Thông báo", "Cập nhật thành công")
+                } else if (o is String) {
+                    DAlertDialog().show(mMainActivity, "Thông báo", o)
+                }
+
+            }
+        }).execute(point)
+
+    }
+//    fun editFeature(point: Point, feature: Feature, serviceFeatureTable: ServiceFeatureTable?, bitmap: Bitmap?) {
+////        val editPoint = mMapView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).targetGeometry.extent.center
+//        EditGeometryAsync(mMainActivity, feature, serviceFeatureTable,bitmap, object : EditGeometryAsync.AsyncResponse {
+//            override fun processFinish(o: Any) {
+//
+//                if (o is Boolean) {
+//                    if (o) {
+//                        DAlertDialog().show(mMainActivity, "Thông báo","Cập nhật thành công")
+//                        mMainActivity.getPopUp()?.handlingCancelAdd()
+//                    } else
+//                        DAlertDialog().show(mMainActivity, "Thông báo","Cập nhật thất bại")
+//                } else if (o is String) {
+//                    DAlertDialog().show(mMainActivity, "Có lỗi xảy ra", o)
+//                }
+//            }
+//        }).execute(point)
+//    }
+
+
+    fun addGraphic(center: Point) {
+//        val symbol = PictureMarkerSymbol(Constant.URLSymbol.MAC_DINH)
+//        symbol.height = 25f
+//        symbol.width = 25f
+//        val listenableFuture = PictureMarkerSymbol.createAsync(BitmapDrawable(mMainActivity.resources,
+//                BitmapFactory.decodeResource(mMainActivity.resources, R.drawable.pin)))
+//        listenableFuture.addDoneListener {
+//            val symbol = listenableFuture.get()
+//            symbol?.let {
+//                symbol.height = 25f
+//                symbol.width = 25f
+//                val graphic = Graphic(center, symbol)
+//                mGraphicsOverlay.graphics.clear()
+//                mGraphicsOverlay.graphics.add(graphic)
+//            }
+//        }
+        val symbol = SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CROSS, Color.GREEN, 20f)
+        val graphic = Graphic(center, symbol)
+        clearGraphics()
+        mGraphicsOverlay.graphics.add(graphic)
+
     }
 
+    fun clearGraphics() {
+        mGraphicsOverlay.graphics.clear()
+    }
 
     fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): DoubleArray {
         val center = mMapView.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE).targetGeometry.extent.center
@@ -98,7 +213,7 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
             query.geometry = envelope
             // add done loading listener to fire when the selection returns
 
-            val singleTapMapViewAsync = SingleTapMapViewAsync(mContext)
+            val singleTapMapViewAsync = SingleTapMapViewAsync(mMainActivity)
             singleTapMapViewAsync.execute(clickPoint)
         }
     }
@@ -230,206 +345,8 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
                 popupInfos!!.dimissCallout()
         }
 
-
-        override fun onPostExecute(result: Void) {
-            super.onPostExecute(result)
-
-        }
-
     }
 
-    internal inner class SingleTapAdddFeatureAsync(private val mContext: Context, private val mImage: ByteArray) : AsyncTask<Point, Void, Void>() {
-        private val mDialog: ProgressDialog?
-
-        init {
-            mDialog = ProgressDialog(mContext, android.R.style.Theme_Material_Dialog_Alert)
-        }
-
-        override fun onPreExecute() {
-            super.onPreExecute()
-            mDialog!!.setMessage("Đang xử lý...")
-            mDialog.setCancelable(false)
-            mDialog.show()
-        }
-
-        override fun doInBackground(vararg params: Point): Void? {
-            val clickPoint = params[0]
-            val feature = mServiceFeatureTable.createFeature()
-            feature.geometry = clickPoint
-            val listListenableFuture = loc.reverseGeocodeAsync(clickPoint)
-            listListenableFuture.addDoneListener {
-                try {
-                    val geocodeResults = listListenableFuture.get()
-                    if (geocodeResults.size > 0) {
-                        val geocodeResult = geocodeResults[0]
-                        val attrs = HashMap<String, Any>()
-                        for (key in geocodeResult.attributes.keys) {
-                            geocodeResult.attributes[key]?.let { attrs.put(key, it) }
-                        }
-                        val address = geocodeResult.attributes["LongLabel"].toString()
-                        feature.attributes[Constant.DIACHI] = address
-                    }
-                    var searchStr = ""
-                    var dateTime = ""
-                    var timeID = ""
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        dateTime = dateString
-                        timeID = timeID
-                        searchStr = Constant.IDDIEM_DANH_GIA + " like '%" + timeID + "'"
-                    }
-                    val queryParameters = QueryParameters()
-                    queryParameters.whereClause = searchStr
-                    val featureQuery = mServiceFeatureTable.queryFeaturesAsync(queryParameters)
-                    val finalDateTime = dateTime
-                    val finalTimeID = timeID
-                    featureQuery.addDoneListener { addFeatureAsync(featureQuery, feature, finalTimeID, finalDateTime) }
-                } catch (e1: InterruptedException) {
-                    notifyError()
-                    e1.printStackTrace()
-                } catch (e1: ExecutionException) {
-                    notifyError()
-                    e1.printStackTrace()
-                }
-            }
-
-            return null
-        }
-
-        private fun notifyError() {
-            MySnackBar.make(mMapView, "Đã xảy ra lỗi", false)
-            if (mDialog != null && mDialog.isShowing) {
-                mDialog.dismiss()
-            }
-
-        }
-
-        private fun addFeatureAsync(featureQuery: ListenableFuture<FeatureQueryResult>, feature: Feature, finalTimeID: String, finalDateTime: String) {
-            try {
-                // lấy stt_id lớn nhất
-                var id_tmp: Int
-                var stt_id = 0
-                val result = featureQuery.get()
-                val iterator = result.iterator()
-                while (iterator.hasNext()) {
-                    val item = iterator.next() as Feature
-                    id_tmp = Integer.parseInt(item.attributes[Constant.IDDIEM_DANH_GIA].toString().split("_".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0])
-                    if (id_tmp > stt_id) stt_id = id_tmp
-                }
-                stt_id++
-                if (stt_id < 10) {
-                    feature.attributes[Constant.IDDIEM_DANH_GIA] = "0" + stt_id + "_" + finalTimeID
-                } else
-                    feature.attributes[Constant.IDDIEM_DANH_GIA] = stt_id.toString() + "_" + finalTimeID
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    val c = Calendar.getInstance()
-                    feature.attributes[Constant.NGAY_CAP_NHAT] = c
-                }
-                val mapViewResult = mServiceFeatureTable.addFeatureAsync(feature)
-                mapViewResult.addDoneListener {
-                    val listListenableEditAsync = mServiceFeatureTable.applyEditsAsync()
-                    listListenableEditAsync.addDoneListener {
-                        try {
-                            val featureEditResults = listListenableEditAsync.get()
-                            if (featureEditResults.size > 0) {
-                                val objectId = featureEditResults[0].objectId
-                                val queryParameters = QueryParameters()
-                                val query = "OBJECTID = $objectId"
-                                queryParameters.whereClause = query
-                                val feature1 = mServiceFeatureTable.queryFeaturesAsync(queryParameters)
-                                feature1.addDoneListener { addAttachment(feature1) }
-                            }
-                        } catch (e: InterruptedException) {
-                            notifyError()
-                            e.printStackTrace()
-                        } catch (e: ExecutionException) {
-                            notifyError()
-                            e.printStackTrace()
-                        }
-
-
-                    }
-                }
-            } catch (e: InterruptedException) {
-                notifyError()
-                e.printStackTrace()
-            } catch (e: ExecutionException) {
-                notifyError()
-                e.printStackTrace()
-            }
-
-        }
-
-        private fun addAttachment(feature: ListenableFuture<FeatureQueryResult>) {
-            var result: FeatureQueryResult? = null
-            try {
-                result = feature.get()
-                if (result!!.iterator().hasNext()) {
-                    val item = result.iterator().next()
-                    mSelectedArcGISFeature = item as ArcGISFeature
-                    val attachmentName = mContext.getString(R.string.attachment) + "_" + System.currentTimeMillis() + ".png"
-                    val addResult = mSelectedArcGISFeature!!.addAttachmentAsync(mImage, Bitmap.CompressFormat.PNG.toString(), attachmentName)
-                    addResult.addDoneListener {
-                        if (mDialog != null && mDialog.isShowing) {
-                            mDialog.dismiss()
-                        }
-                        try {
-                            val attachment = addResult.get()
-                            if (attachment.size > 0) {
-                                val tableResult = mServiceFeatureTable.updateFeatureAsync(mSelectedArcGISFeature!!)
-                                tableResult.addDoneListener {
-                                    val updatedServerResult = mServiceFeatureTable.applyEditsAsync()
-                                    updatedServerResult.addDoneListener {
-                                        var edits: List<FeatureEditResult>? = null
-                                        try {
-                                            edits = updatedServerResult.get()
-                                            if (edits!!.size > 0) {
-                                                if (!edits[0].hasCompletedWithErrors()) {
-                                                }
-                                            }
-                                        } catch (e: InterruptedException) {
-                                            e.printStackTrace()
-                                        } catch (e: ExecutionException) {
-                                            e.printStackTrace()
-                                        }
-
-                                        if (mDialog != null && mDialog.isShowing) {
-                                            mDialog.dismiss()
-                                        }
-                                    }
-                                }
-                            }
-
-                        } catch (e: InterruptedException) {
-                            e.printStackTrace()
-                        } catch (e: ExecutionException) {
-                            e.printStackTrace()
-                        }
-                    }
-                    val extent = item.getGeometry().extent
-                    mMapView.setViewpointGeometryAsync(extent)
-                }
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            } catch (e: ExecutionException) {
-                e.printStackTrace()
-            }
-
-
-        }
-
-        override fun onProgressUpdate(vararg values: Void) {
-            super.onProgressUpdate(*values)
-
-        }
-
-
-        override fun onPostExecute(result: Void) {
-            super.onPostExecute(result)
-
-        }
-
-    }
 
     companion object {
 
