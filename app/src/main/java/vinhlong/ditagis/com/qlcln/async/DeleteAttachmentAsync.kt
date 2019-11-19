@@ -1,4 +1,4 @@
-package vinhlong.ditagis.com.qlcln.adapter
+package vinhlong.ditagis.com.qlcln.async
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -9,19 +9,16 @@ import com.esri.arcgisruntime.data.ServiceFeatureTable
 import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.utities.Constant
 import vinhlong.ditagis.com.qlcln.utities.Preference
-import java.util.*
 
 
 @SuppressLint("StaticFieldLeak")
-class UpdateAttachmentAsync(private val mActivity: Activity, private val mFeature: ArcGISFeature,
-                            private val mAttachment: Attachment,
-                            private val mByteArray: ByteArray,
-                            asyncResponse: AsyncResponse) : AsyncTask<Void?, Any, Void?>() {
+class DeleteAttachmentAsync(private val mActivity: Activity, private val mFeature: ArcGISFeature,
+                            asyncResponse: AsyncResponse) : AsyncTask<Attachment, Any, Void?>() {
     private val mApplication: DApplication = mActivity.application as DApplication
-private val mServiceFeatureTable = mFeature.featureTable as ServiceFeatureTable
+    private val mServiceFeatureTable = mFeature.featureTable as ServiceFeatureTable
     private var delegate: AsyncResponse? = null
-    private val mThoiGian = Calendar.getInstance()
     private val mUsername: String
+
     init {
         this.delegate = asyncResponse
 
@@ -32,18 +29,16 @@ private val mServiceFeatureTable = mFeature.featureTable as ServiceFeatureTable
         fun processFinish(o: Any)
     }
 
-    override fun onPreExecute() {
-        super.onPreExecute()
+    override fun doInBackground(vararg params: Attachment): Void? {
+        if (params.isEmpty()) {
+            publishProgress("Không có ảnh để xóa!")
+            return null
+        }
+        val deleteAttachmentAsync = mFeature.deleteAttachmentAsync(params.first())
+        deleteAttachmentAsync.addDoneListener {
+            mServiceFeatureTable?.updateFeatureAsync(mFeature)?.addDoneListener { applyServerEdits() }
+        }
 
-    }
-
-    override fun doInBackground(vararg params: Void?): Void? {
-        val attachmentName = String.format(Constant.AttachmentName.UPDATE,
-                mUsername, System.currentTimeMillis())
-        mFeature.updateAttachmentAsync(mAttachment, mByteArray, Constant.CompressFormat.TYPE_UPDATE.toString(), attachmentName)
-                .addDoneListener {
-                    mServiceFeatureTable?.updateFeatureAsync(mFeature)?.addDoneListener { applyServerEdits() }
-                }
         return null
     }
 
@@ -60,10 +55,12 @@ private val mServiceFeatureTable = mFeature.featureTable as ServiceFeatureTable
                         if (!edits[0].hasCompletedWithErrors()) {
                             publishProgress(true)
                             //attachmentList.add(fileName);
-                            } else {
-                          publishProgress(false) }
+                        } else {
+                            publishProgress(false)
+                        }
                     } else {
-                  publishProgress(false) }
+                        publishProgress(false)
+                    }
                 } catch (e: Exception) {
                     publishProgress(e)
                 }
@@ -74,6 +71,7 @@ private val mServiceFeatureTable = mFeature.featureTable as ServiceFeatureTable
         }
 
     }
+
     override fun onProgressUpdate(vararg values: Any) {
         super.onProgressUpdate(*values)
         mApplication.progressDialog?.dismiss()

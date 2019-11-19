@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.activity_camera.*
 import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.utities.Constant
 import vinhlong.ditagis.com.qlcln.utities.DAlertDialog
+import vinhlong.ditagis.com.qlcln.utities.DBitmap
 import java.io.IOException
 
 
@@ -95,7 +96,8 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
             mCamera!!.startPreview()
 
             mPictureCallback = Camera.PictureCallback { bytes, camera ->
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                val bitmap =   DBitmap().getBitmap(bytes)
                 var orientation = mOrientation
                 val div = orientation / 90
                 val mod = orientation % 90

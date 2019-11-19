@@ -631,64 +631,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         startActivityForResult(intent, Constants.REQUEST_CODE);
     }
 
-    private fun getBitmap(path: String?): Bitmap? {
-
-        val uri = Uri.fromFile(File(path!!))
-        var `in`: InputStream? = null
-        try {
-            val IMAGE_MAX_SIZE = 1200000 // 1.2MP
-            `in` = contentResolver.openInputStream(uri)
-
-            // Decode image size
-            var o = BitmapFactory.Options()
-            o.inJustDecodeBounds = true
-            BitmapFactory.decodeStream(`in`, null, o)
-            `in`!!.close()
-
-
-            var scale = 1
-            while (o.outWidth * o.outHeight * (1 / Math.pow(scale.toDouble(), 2.0)) > IMAGE_MAX_SIZE) {
-                scale++
-            }
-            Log.d("", "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight)
-
-            var b: Bitmap? = null
-            `in` = contentResolver.openInputStream(uri)
-            if (scale > 1) {
-                scale--
-                // scale to max possible inSampleSize that still yields an image
-                // larger than target
-                o = BitmapFactory.Options()
-                o.inSampleSize = scale
-                b = BitmapFactory.decodeStream(`in`, null, o)
-
-                // resize to desired dimensions
-                val height = b!!.height
-                val width = b.width
-                Log.d("", "1th scale operation dimenions - width: $width, height: $height")
-
-                val y = Math.sqrt(IMAGE_MAX_SIZE / (width.toDouble() / height))
-                val x = y / height * width
-
-                val scaledBitmap = Bitmap.createScaledBitmap(b, x.toInt(), y.toInt(), true)
-                b.recycle()
-                b = scaledBitmap
-
-                System.gc()
-            } else {
-                b = BitmapFactory.decodeStream(`in`)
-            }
-            `in`!!.close()
-
-            Log.d("", "bitmaps size - width: " + b!!.width + ", height: " + b.height)
-            return b
-        } catch (e: IOException) {
-            Log.e("", e.message, e)
-            return null
-        }
-
-    }
-
     @SuppressLint("ResourceAsColor")
     private fun handlingColorBackgroundLayerSelected(id: Int) {
         when (id) {

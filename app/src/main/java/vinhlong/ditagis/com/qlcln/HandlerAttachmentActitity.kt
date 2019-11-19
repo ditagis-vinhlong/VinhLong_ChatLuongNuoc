@@ -7,7 +7,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.esri.arcgisruntime.data.ArcGISFeature
 import kotlinx.android.synthetic.main.activity_handler_attachment.*
-import vinhlong.ditagis.com.qlcln.adapter.UpdateAttachmentAsync
+import vinhlong.ditagis.com.qlcln.async.UpdateAttachmentAsync
 import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.utities.DAlertDialog
 import vinhlong.ditagis.com.qlcln.utities.DBitmap
@@ -54,18 +54,17 @@ class HandlerAttachmentActivity : AppCompatActivity() {
             mApplication.progressDialog?.show(this, layout_handler_attachment, "Đang cập nhật hình ảnh...")
             UpdateAttachmentAsync(this, mApplication.selectedFeature!! as ArcGISFeature, mApplication.selectedAttachment!!,
 
-                    DBitmap().getByteArray  ((img_view_attachment.drawable as BitmapDrawable).bitmap), object: UpdateAttachmentAsync.AsyncResponse{
+                    DBitmap().getByteArray((img_view_attachment.drawable as BitmapDrawable).bitmap), object : UpdateAttachmentAsync.AsyncResponse {
                 override fun processFinish(o: Any) {
                     mApplication.progressDialog.dismiss()
 
-                    if (o is Boolean){
-                        if (o){
-                            DAlertDialog().show(this@HandlerAttachmentActivity, "Thông báo","Cập nhật thành công")
+                    if (o is Boolean) {
+                        if (o) {
+                            DAlertDialog().show(this@HandlerAttachmentActivity, "Thông báo", "Cập nhật thành công")
+                        } else {
+                            DAlertDialog().show(this@HandlerAttachmentActivity, "Thông báo", "Cập nhật thất bại")
                         }
-                        else{
-                            DAlertDialog().show(this@HandlerAttachmentActivity, "Thông báo","Cập nhật thất bại")
-                        }
-                    }else if (o is Exception){
+                    } else if (o is Exception) {
                         DAlertDialog().show(this@HandlerAttachmentActivity, o)
                     }
                 }

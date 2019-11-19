@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
->
-
-
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/selection_method_capture"
         android:icon="@drawable/ic_camera"
+        android:iconTint="@color/colorPrimary"
 
         android:title="Chụp ảnh" />
 
     <item
         android:id="@+id/selection_method_pick"
         android:icon="@drawable/ic_attachment"
+        android:iconTint="@color/colorPrimary"
         android:title="Thư viện" />
+
 </menu>

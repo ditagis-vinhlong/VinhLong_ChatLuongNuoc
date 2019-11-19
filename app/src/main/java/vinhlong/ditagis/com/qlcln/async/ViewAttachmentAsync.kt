@@ -1,4 +1,4 @@
-package vinhlong.ditagis.com.qlcln.adapter
+package vinhlong.ditagis.com.qlcln.async
 
 import android.annotation.SuppressLint
 import android.app.Activity

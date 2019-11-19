@@ -23,8 +23,8 @@ class DBitmap {
         return scaledBitmap
     }
     fun getBitmap(byteArray: ByteArray): Bitmap{
-
-        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        return getDecreaseSizeBitmap(bitmap)
     }
     fun getByteArray(bitmap: Bitmap): ByteArray {
         val tmpBitmap = getDecreaseSizeBitmap(bitmap)
