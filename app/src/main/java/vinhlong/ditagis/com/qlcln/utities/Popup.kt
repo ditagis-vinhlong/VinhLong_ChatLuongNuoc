@@ -229,7 +229,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
                     object : EditAsync.AsyncResponse {
                         override fun processFinish(o: Any) {
                             if (o is Long) {
-                                Snackbar.make(layout, "Cập nhật thành công!", Snackbar.LENGTH_SHORT).show()
+                                DAlertDialog().show(mMainActivity, "Thông báo", "Cập nhật thành công")
                                 dialog.dismiss()
 
                                 //query lại điểm để hiển thị lên popup
@@ -248,7 +248,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
                                     }
                                 }}).execute(parameters)
                             } else {
-                                Snackbar.make(layout, "Cập nhật thất bại!", Snackbar.LENGTH_SHORT).show()
+                                DAlertDialog().show(mMainActivity, "Thông báo", "Cập nhật thất bại")
                             }
                         }
                     })

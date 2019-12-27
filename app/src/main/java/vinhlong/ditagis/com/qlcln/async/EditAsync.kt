@@ -127,7 +127,7 @@ class EditAsync(private val mContext: Context, private val mServiceFeatureTable:
 
     override fun onProgressUpdate(vararg values: Any) {
         super.onProgressUpdate(*values)
-        if (values != null && values.size > 0) {
+        if (values.isNotEmpty()) {
             mDelegate.processFinish(values[0])
         } else {
             mDelegate.processFinish(false)

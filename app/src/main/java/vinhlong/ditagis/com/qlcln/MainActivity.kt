@@ -116,8 +116,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initListViewSearch()
 
         initLayerListView()
-
-
+        nav_view!!.menu.add(1, 1, 1, Constant.SERVER_API.removeSuffix("/api"))
+        nav_view!!.menu.add(1, 1, 1,"v"+ packageManager.getPackageInfo(packageName, 0).versionName)
         setOnClickListener()
         startGPS()
         startSignIn()

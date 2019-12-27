@@ -25,7 +25,7 @@
       </configuration>
     </facet>
     <facet type="kotlin-language" name="Kotlin">
-      <configuration version="3" platform="JVM 1.6" allPlatforms="JVM [1.6]" useProjectSettings="false" pureKotlinSourceFolders="D:\Documents\git\DITAGIS\Vinh Long\VinhLong_ChatLuongNuoc\app\src\debug\kotlin;D:\Documents\git\DITAGIS\Vinh Long\VinhLong_ChatLuongNuoc\app\src\debug\java;D:\Documents\git\DITAGIS\Vinh Long\VinhLong_ChatLuongNuoc\app\src\release\kotlin;D:\Documents\git\DITAGIS\Vinh Long\VinhLong_ChatLuongNuoc\app\src\release\java;D:\Documents\git\DITAGIS\Vinh Long\VinhLong_ChatLuongNuoc\app\src\debugAndroidTest\kotlin;D:\Documents\git\DITAGIS\Vinh Long\VinhLong_ChatLuongNuoc\app\src\debugUnitTest\kotlin;D:\Documents\git\DITAGIS\Vinh Long\VinhLong_ChatLuongNuoc\app\src\releaseUnitTest\kotlin">
+      <configuration version="3" platform="JVM 1.6" allPlatforms="JVM [1.6]" useProjectSettings="false">
         <compilerSettings>
           <option name="additionalArguments" value="-Xallow-no-source-files" />
         </compilerSettings>

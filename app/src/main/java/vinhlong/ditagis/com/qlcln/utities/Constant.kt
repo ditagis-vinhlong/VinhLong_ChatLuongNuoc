@@ -16,7 +16,8 @@ object Constant {
     val DIACHI = "DiaChi"
     val NGAY_CAP_NHAT = "NgayCapNhat"
     val REQUEST_LOGIN = 0
-    private val SERVER_API = "http://vwa.ditagis.com/api"
+//    private val SERVER_API = "http://vwa.ditagis.com/api/api"
+    val SERVER_API = "http://vwaco.com.vn:9092/api"
     //    private static final String SERVER_API = "http://113.161.88.180:798/apiv1/api";
     object LayerID {
         val DIEM_DANH_GIA = "diemdanhgiaLYR"

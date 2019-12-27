@@ -77,8 +77,6 @@ class NewLoginAsycn(activity: Activity, private val mDelegate: AsyncResponse) : 
         val pin = params[1]
         //        String passEncoded = (new EncodeMD5()).encode(pin + "_DITAGIS");
         // Do some validation here
-        val urlParameters = String.format("Username=%s&Password=%s", userName, pin)
-        val urlWithParam = String.format("%s?%s", Constant.API_URL.LOGIN, urlParameters)
         try {
             //            + "&apiKey=" + API_KEY
             val url = URL(Constant.API_URL.LOGIN)
