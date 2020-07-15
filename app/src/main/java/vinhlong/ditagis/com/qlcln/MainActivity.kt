@@ -305,6 +305,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             featureLayer.maxScale = 0.0
             featureLayer.minScale = 1000000.0
             featureLayer.id = layerInfoDTG.id!!
+            val definition = layerInfoDTG.definition
+            if (definition != null && definition != "null")
+            featureLayer.definitionExpression = definition
             val action = Action(layerInfoDTG.isView, layerInfoDTG.isCreate, layerInfoDTG.isEdit, layerInfoDTG.isDelete)
             val featureLayerDTG = FeatureLayerDTG(featureLayer, layerInfoDTG.titleLayer, action)
             featureLayerDTG.outFields = getFieldsDTG(layerInfoDTG.outField)
