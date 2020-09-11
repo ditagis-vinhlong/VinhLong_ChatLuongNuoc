@@ -23,6 +23,19 @@ object Constant {
         val DIEM_DANH_GIA = "diemdanhgiaLYR"
         val MAU_DANH_GIA = "maukiemnghiemTBL"
     }
+    object IDMapLayer{
+        val HanhChinh: Long = 6
+    }
+    object FieldHanhChinh{
+        val ID_HANH_CHINH = "IDHanhChinh"
+        val MA_HUYEN = "MaHuyen"
+        val TEN_HUYEN = "TenHuyen"
+        val TEN_HANH_CHINH = "TenHanhChinh"
+    }
+    object FieldChatLuongNuoc{
+        val MA_HUYEN = "MaHuyen"
+        val MA_XA = "MaXa"
+    }
     object API_URL {
         val LOGIN = "$SERVER_API/Login"
         val DISPLAY_NAME = "$SERVER_API/Account/Profile"

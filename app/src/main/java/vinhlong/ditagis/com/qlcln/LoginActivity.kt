@@ -90,7 +90,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                         dApplication!!.user = output
                     }
                     else if(output is String){
-                        Snackbar.make(btnLogin, output, Snackbar.LENGTH_LONG).show()
+//                        Snackbar.make(btnLogin, output, Snackbar.LENGTH_LONG).show()
+                        handleLoginFail()
                     }
                 } else
                     handleLoginFail()

@@ -10,8 +10,8 @@ android {
         applicationId "com.ditagis.vinhlong.cln"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 6
-        versionName "1.1.3"
+        versionCode 10104
+        versionName "1.1.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 //        ndk.abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         ndk.abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'

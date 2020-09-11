@@ -2,6 +2,7 @@ package vinhlong.ditagis.com.qlcln.entities
 
 
 import android.app.Application
+import android.app.Service
 import android.graphics.Bitmap
 import android.location.Location
 import com.esri.arcgisruntime.data.Attachment
@@ -25,7 +26,7 @@ class DApplication : Application() {
     var selectedFeature: Feature? = null
     private var mLocation: Location? = null
     var featureLayerDiemDanhGia: FeatureLayer? = null
-
+    var serviceFeatureTableHanhChinh: ServiceFeatureTable? = null
     fun setmLocation(mLocation: Location) {
         this.mLocation = mLocation
     }

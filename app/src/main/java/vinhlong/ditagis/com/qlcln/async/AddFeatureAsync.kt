@@ -82,7 +82,31 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                 val featureQuery = mServiceFeatureTable.queryFeaturesAsync(queryParameters)
                 val finalDateTime = dateTime
                 val finalTimeID = timeID
-                featureQuery.addDoneListener { addFeatureAsync(featureQuery, feature, finalTimeID, finalDateTime) }
+
+
+                featureQuery.addDoneListener {
+                    var queryParameters = QueryParameters()
+                    queryParameters.geometry = clickPoint
+                    var listenableFuture = mApplication.serviceFeatureTableHanhChinh!!.queryFeaturesAsync(queryParameters, ServiceFeatureTable.QueryFeatureFields.LOAD_ALL)
+                    listenableFuture.addDoneListener {
+                        try {
+                            var featureQueryResult = listenableFuture.get()
+                            val iterator = featureQueryResult.iterator()
+
+                            while (iterator.hasNext()) {
+                                val featureHanhChinh = iterator.next() as Feature
+                                feature.attributes[Constant.FieldChatLuongNuoc.MA_HUYEN] = featureHanhChinh.attributes[Constant.FieldHanhChinh.MA_HUYEN]
+                                feature.attributes[Constant.FieldChatLuongNuoc.MA_XA] = featureHanhChinh.attributes[Constant.FieldHanhChinh.ID_HANH_CHINH]
+                            }
+                            addFeatureAsync(featureQuery, feature, finalTimeID, finalDateTime)
+                        }
+                        catch (e: Exception){
+                            publishProgress(e.toString())
+                        }
+                    }
+
+
+                }
             } catch (e: Exception) {
                 publishProgress(e.toString())
             }

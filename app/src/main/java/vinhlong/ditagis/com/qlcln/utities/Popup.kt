@@ -512,13 +512,17 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
                                 if (edits!!.size > 0) {
                                     editingMauKiemNghiem.deleteDanhSachMauDanhGia(mSelectedArcGISFeature!!)
                                     if (!edits[0].hasCompletedWithErrors()) {
-                                        Log.e("", "Feature successfully updated")
+                                        DAlertDialog().show(mMainActivity, "Thông báo", "Xóa thành công!")
+                                    }
+                                    else{
+                                        DAlertDialog().show(mMainActivity, "Thông báo", "Xóa thất bại")
                                     }
                                 }
-                            } catch (e: InterruptedException) {
-                                e.printStackTrace()
-                            } catch (e: ExecutionException) {
-                                e.printStackTrace()
+                                else {
+                                    DAlertDialog().show(mMainActivity, "Thông báo", "Xóa thất bại")
+                                }
+                            } catch (e: Exception) {
+                                DAlertDialog().show(mMainActivity, "Có lỗi xảy ra", e.toString())
                             }
                         }
                     }

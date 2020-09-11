@@ -335,6 +335,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         val sublayerList = hanhChinhImageLayers!!.sublayers
                         for (sublayer in sublayerList) {
                             addCheckBox_SubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerBaseMap!!)
+                            if(sublayer.id == Constant.IDMapLayer.HanhChinh){
+                                mApplication!!.serviceFeatureTableHanhChinh = ServiceFeatureTable(url + "/" + sublayer.id)
+                            }
                         }
                     }
                 }
