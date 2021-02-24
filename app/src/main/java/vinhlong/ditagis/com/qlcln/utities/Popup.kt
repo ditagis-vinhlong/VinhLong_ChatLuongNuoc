@@ -425,7 +425,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
 //                val geometry = GeometryEngine.project(pointLongLat, SpatialReferences.getWgs84())
 //                val geometry1 = GeometryEngine.project(geometry, SpatialReferences.getWebMercator())
 //                point = geometry1.extent.center
-               mMainActivity.showMenuAddAttachment()
+               mMainActivity.showMenuAddAttachment(txtAddress.text.toString())
             }
             linearLayout!!.findViewById<ImageButton>(R.id.imgBtn_dialog_search_address_cancel)
                     .setOnClickListener { handlingCancelAdd() }
@@ -460,13 +460,13 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
 
     }
 
-    fun handlingAddFeatureOrChangeGeometry(point: Point?, address: String?, feature: Feature?) {
+    fun handlingAddFeatureOrChangeGeometry(point: Point?, address: String, feature: Feature?) {
         try {  //call handlingcanceladd
             mCallout?.dismiss()
 
 //            when (mApplication.statusCode) {
 //                Constant.StatusCode.IS_ADDING.value ->
-            mMainActivity.getMapViewHandler()?.addFeature(point, mApplication.bitmaps!!)
+            mMainActivity.getMapViewHandler()?.addFeature(point, mApplication.bitmaps!!, address)
 //                Constant.StatusCode.IS_CHANGING_GEOMETRY.value -> point?.let {
 //                    feature?.let { feature -> mMainActivity.getMapViewHandler()?.editFeature(it, feature, serviceFeatureTable!!, mApplication.bitmaps) }
 //                }

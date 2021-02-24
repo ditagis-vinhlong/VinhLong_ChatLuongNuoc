@@ -3,14 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/selection_method_capture"
-        android:icon="@drawable/ic_camera"
-        android:iconTint="@color/colorPrimary"
+        android:icon="@drawable/ic_camera_black"
 
         android:title="Chụp ảnh" />
 
     <item
         android:id="@+id/selection_method_pick"
-        android:icon="@drawable/ic_attachment"
+        android:icon="@drawable/ic_attachment_black"
         android:iconTint="@color/colorPrimary"
         android:title="Thư viện" />
 

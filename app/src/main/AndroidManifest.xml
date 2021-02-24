@@ -14,10 +14,10 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="m">
-        <activity android:name=".ShowCaptureActivity" />
+        <activity android:name=".ShowCaptureActivity" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".HandlerAttachmentActivity" android:parentActivityName=".AttachmentActivity" />
         <activity android:name=".AttachmentActivity" android:parentActivityName=".MainActivity" />
-        <activity android:name=".CameraActivity"/>
+        <activity android:name=".CameraActivity" android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

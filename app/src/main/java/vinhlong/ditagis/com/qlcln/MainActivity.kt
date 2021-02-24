@@ -66,6 +66,7 @@ import java.io.File
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
+    private var mAddress: String = ""
     private var mUri: Uri? = null
     private var mPopup: Popup? = null
     private var mMapView: MapView? = null
@@ -337,6 +338,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             addCheckBox_SubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerBaseMap!!)
                             if(sublayer.id == Constant.IDMapLayer.HanhChinh){
                                 mApplication!!.serviceFeatureTableHanhChinh = ServiceFeatureTable(url + "/" + sublayer.id)
+
+//                                mApplication!!.serviceFeatureTableHanhChinh = sublayer.table
                             }
                         }
                     }
@@ -612,7 +615,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun showMenuAddAttachment() {
+    fun showMenuAddAttachment(address: String) {
+        mAddress = address
         SheetMenu(
                 context = this,
                 title = "Thêm ảnh",
@@ -714,7 +718,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (mApplication?.featureLayerDiemDanhGia != null){
 //                        mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
 //                                mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
-                        mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
+                        mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, mAddress, null)
                     }
                     else{
 
@@ -730,7 +734,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         if (mApplication?.featureLayerDiemDanhGia != null){
 //                            mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
 //                                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
-                            mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
+                            mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, mAddress, null)
                         }
                         else{
 

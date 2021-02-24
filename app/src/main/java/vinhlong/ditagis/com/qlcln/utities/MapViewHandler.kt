@@ -131,8 +131,8 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 //        singleTapAdddFeatureAsync.execute(add_point)
 //    }
 
-    fun addFeature(point: Point?, bitmaps: ArrayList<Bitmap>) {
-        AddFeatureAsync(mMainActivity, bitmaps, mServiceFeatureTable, object : AddFeatureAsync.AsyncResponse {
+    fun addFeature(point: Point?, bitmaps: ArrayList<Bitmap>, address: String) {
+        AddFeatureAsync(mMainActivity, bitmaps, mServiceFeatureTable, address, object : AddFeatureAsync.AsyncResponse {
             override fun processFinish(o: Any) {
                 if (o is ArcGISFeature) {
                     mApplication.selectedFeature = o

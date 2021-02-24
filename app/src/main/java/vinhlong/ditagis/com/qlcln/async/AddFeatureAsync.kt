@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
-                      val mServiceFeatureTable: ServiceFeatureTable, val mDelegate: AsyncResponse) : AsyncTask<Point, Any, Void?>() {
+                      val mServiceFeatureTable: ServiceFeatureTable, val mAddress: String, val mDelegate: AsyncResponse) : AsyncTask<Point, Any, Void?>() {
     private val mDialog: ProgressDialog?
     private val mApplication = mActivity.application as DApplication
     private var loc = LocatorTask("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer")
@@ -56,19 +56,9 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
         val clickPoint = params[0]
         val feature = mServiceFeatureTable.createFeature()
         feature.geometry = clickPoint
-        val listListenableFuture = loc.reverseGeocodeAsync(clickPoint)
-        listListenableFuture.addDoneListener {
-            try {
-                val geocodeResults = listListenableFuture.get()
-                if (geocodeResults.size > 0) {
-                    val geocodeResult = geocodeResults[0]
-                    val attrs = HashMap<String, Any>()
-                    for (key in geocodeResult.attributes.keys) {
-                        geocodeResult.attributes[key]?.let { attrs.put(key, it) }
-                    }
-                    val address = geocodeResult.attributes["LongLabel"].toString()
-                    feature.attributes[Constant.DIACHI] = address
-                }
+
+                    feature.attributes[Constant.DIACHI] = mAddress
+
                 var searchStr = ""
                 var dateTime = ""
                 var timeID = ""
@@ -101,16 +91,14 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                             addFeatureAsync(featureQuery, feature, finalTimeID, finalDateTime)
                         }
                         catch (e: Exception){
-                            publishProgress(e.toString())
+//                            publishProgress(e.toString())
+                            addFeatureAsync(featureQuery, feature, finalTimeID, finalDateTime)
                         }
                     }
 
 
                 }
-            } catch (e: Exception) {
-                publishProgress(e.toString())
-            }
-        }
+
 
         return null
     }
