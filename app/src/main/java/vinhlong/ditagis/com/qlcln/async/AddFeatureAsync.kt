@@ -77,6 +77,7 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                 featureQuery.addDoneListener {
                     var queryParameters = QueryParameters()
                     queryParameters.geometry = clickPoint
+//                    queryParameters.whereClause = "1 = 1"
                     var listenableFuture = mApplication.serviceFeatureTableHanhChinh!!.queryFeaturesAsync(queryParameters, ServiceFeatureTable.QueryFeatureFields.LOAD_ALL)
                     listenableFuture.addDoneListener {
                         try {
