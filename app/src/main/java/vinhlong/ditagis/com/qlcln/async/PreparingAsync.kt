@@ -22,7 +22,7 @@ import java.net.URL
 import java.util.*
 
 
-class PreparingAsycn(private val mContext: Context,private val mApplication: DApplication, private val mDelegate: AsyncResponse) : AsyncTask<Void, Void, List<DLayerInfo>?>() {
+class PreparingAsync(private val mContext: Context, private val mApplication: DApplication, private val mDelegate: AsyncResponse) : AsyncTask<Void, Void, List<DLayerInfo>?>() {
     private var mDialog: ProgressDialog? = null
 
     interface AsyncResponse {

@@ -12,7 +12,6 @@ import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
@@ -51,10 +50,12 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_quan_ly_chat_luong_nuoc.*
 import kotlinx.android.synthetic.main.content_quan_ly_su_co.*
+//import kotlinx.coroutines.GlobalScope
+//import kotlinx.coroutines.launch
 import ru.whalemare.sheetmenu.SheetMenu
 import ru.whalemare.sheetmenu.layout.LinearLayoutProvider
 import vinhlong.ditagis.com.qlcln.adapter.DiaChiAdapter
-import vinhlong.ditagis.com.qlcln.async.PreparingAsycn
+import vinhlong.ditagis.com.qlcln.async.PreparingAsync
 import vinhlong.ditagis.com.qlcln.entities.DAddress
 import vinhlong.ditagis.com.qlcln.entities.DApplication
 import vinhlong.ditagis.com.qlcln.entities.DLayerInfo
@@ -67,7 +68,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
-    private var mUri: Uri? = null
+    private var mAddress: String = ""
     private var mPopup: Popup? = null
     private var mMapView: MapView? = null
     private var mMap: ArcGISMap? = null
@@ -82,18 +83,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var mLinnearDisplayLayerBaseMap: LinearLayout? = null
     private var mFloatButtonLayer: FloatingActionButton? = null
     private var mFloatButtonLocation: FloatingActionButton? = null
-    private var cb_Layer_HanhChinh: CheckBox? = null
-    private var cb_Layer_TaiSan: CheckBox? = null
+    private var cbLayerHanhChinh: CheckBox? = null
+    private var cbLayerTaiSan: CheckBox? = null
     private var traCuu: TraCuu? = null
     private var states: Array<IntArray>? = null
     private var colors: IntArray? = null
 
     private var mLocationDisplay: LocationDisplay? = null
     private val requestCode = 2
-    internal var reqPermissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    private var reqPermissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
 
     private var mLocationHelper: LocationHelper? = null
-    private val table_thoigiancln: ServiceFeatureTable? = null
     private var mLocation: Location? = null
     private var mApplication: DApplication? = null
     fun getMapViewHandler(): MapViewHandler? {
@@ -168,10 +168,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
         if (ActivityCompat.checkSelfPermission(this,
-                        android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
-        assert(locationManager != null)
         locationManager.requestLocationUpdates("gps", 5000, 0f, listener)
     }
 
@@ -200,7 +199,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val items = arrayListOf<DAddress>()
         this.mDiaChiAdapter = DiaChiAdapter(this@MainActivity, items)
         this.mListViewSearch!!.adapter = mDiaChiAdapter
-        this.mListViewSearch!!.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+        this.mListViewSearch!!.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
             val dAddress = parent.getItemAtPosition(position) as DAddress
             addFeature(dAddress)
             mDiaChiAdapter!!.clear()
@@ -209,47 +208,48 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setUp() {
-        states = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
-        colors = intArrayOf(R.color.colorTextColor_1, R.color.colorTextColor_1)
-        val builder = StrictMode.VmPolicy.Builder()
-        StrictMode.setVmPolicy(builder.build())
-        val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
-        setSupportActionBar(toolbar)
+//        GlobalScope.launch {
+            states = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
+            colors = intArrayOf(R.color.colorTextColor_1, R.color.colorTextColor_1)
+            val builder = StrictMode.VmPolicy.Builder()
+            StrictMode.setVmPolicy(builder.build())
+            val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
+            setSupportActionBar(toolbar)
 
-        requestPermisson()
-        val drawer = container_main
-        val toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        drawer.addDrawerListener(toggle)
-        toggle.syncState()
+            requestPermission()
+            val drawer = container_main
+            val toggle = ActionBarDrawerToggle(this@MainActivity, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+            drawer.addDrawerListener(toggle)
+            toggle.syncState()
 
-        val navigationView = findViewById<View>(R.id.nav_view) as NavigationView
-        navigationView.setNavigationItemSelectedListener(this)
-
-
+            val navigationView = findViewById<View>(R.id.nav_view) as NavigationView
+            navigationView.setNavigationItemSelectedListener(this@MainActivity)
+//        }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initMapView() {
         mMapView = findViewById(R.id.mapView)
         mMap = ArcGISMap(Basemap.Type.OPEN_STREET_MAP, LATITUDE, LONGTITUDE, LEVEL_OF_DETAIL)
         mMapView!!.map = mMap
         mCallout = mMapView!!.callout
 
-        val preparingAsycn = PreparingAsycn(this, mApplication!!, object : PreparingAsycn.AsyncResponse {
+        val preparingAsync = PreparingAsync(this, mApplication!!, object : PreparingAsync.AsyncResponse {
             override fun processFinish(output: List<DLayerInfo>?) {
                 mApplication!!.layerInfos = output
-                setFeatureService()
+                setServices()
             }
         })
         if (CheckConnectInternet.isOnline(this))
-            preparingAsycn.execute()
-        val edit_latitude = findViewById<View>(R.id.edit_latitude) as EditText
-        val edit_longtitude = findViewById<View>(R.id.edit_longtitude) as EditText
+            preparingAsync.execute()
+        val editLatitude = findViewById<View>(R.id.edit_latitude) as EditText
+        val editLongtitude = findViewById<View>(R.id.edit_longtitude) as EditText
 
         changeStatusOfLocationDataSource()
         mLocationDisplay!!.addLocationChangedListener { locationChangedEvent ->
             val position = locationChangedEvent.location.position
-            edit_longtitude.setText(position.x.toString() + "")
-            edit_latitude.setText(position.y.toString() + "")
+            editLongtitude.setText(position.x.toString() + "")
+            editLatitude.setText(position.y.toString() + "")
             val geometry = GeometryEngine.project(position, SpatialReferences.getWebMercator())
             mMapView!!.setViewpointCenterAsync(geometry.extent.center)
         }
@@ -257,6 +257,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun initLayerListView() {
+
+        mLinnearDisplayLayerTaiSan = findViewById(R.id.linnearDisplayLayerTaiSan)
+        mLinnearDisplayLayerBaseMap = findViewById(R.id.linnearDisplayLayerBaseMap)
         findViewById<View>(R.id.layout_layer_open_street_map).setOnClickListener(this)
         findViewById<View>(R.id.layout_layer_street_map).setOnClickListener(this)
         findViewById<View>(R.id.layout_layer_topo).setOnClickListener(this)
@@ -266,9 +269,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mFloatButtonLocation = findViewById(R.id.floatBtnLocation)
         mFloatButtonLocation!!.setOnClickListener(this)
 
-        cb_Layer_HanhChinh = findViewById(R.id.cb_Layer_HanhChinh)
-        cb_Layer_TaiSan = findViewById(R.id.cb_Layer_TaiSan)
-        cb_Layer_TaiSan!!.setOnCheckedChangeListener { _, isChecked ->
+        cbLayerHanhChinh = findViewById(R.id.cb_Layer_HanhChinh)
+        cbLayerTaiSan = findViewById(R.id.cb_Layer_TaiSan)
+        cbLayerTaiSan!!.setOnCheckedChangeListener { _, isChecked ->
             for (i in 0 until mLinnearDisplayLayerTaiSan!!.childCount) {
                 val view = mLinnearDisplayLayerTaiSan!!.getChildAt(i)
                 if (view is CheckBox) {
@@ -276,7 +279,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }
         }
-        cb_Layer_HanhChinh!!.setOnCheckedChangeListener { buttonView, isChecked ->
+        cbLayerHanhChinh!!.setOnCheckedChangeListener { _, isChecked ->
             for (i in 0 until mLinnearDisplayLayerBaseMap!!.childCount) {
                 val view = mLinnearDisplayLayerBaseMap!!.getChildAt(i)
                 if (view is CheckBox) {
@@ -286,103 +289,110 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun setFeatureService() {
-        val size = AtomicInteger(mApplication!!.layerInfos!!.size)
-        for (layerInfo in mApplication!!.layerInfos!!) {
-            if (!layerInfo.isView) {
-                size.decrementAndGet()
-                if (size.get() == 0) {
-                    handlingLoadDone()
-                }
-                continue
-            }
-            var url = layerInfo.url
-            if (!layerInfo.url!!.startsWith("http"))
-                url = "http:" + layerInfo.url!!
-            if (layerInfo.layerId!! == Constant.LayerID.BASEMAP) {
-                hanhChinhImageLayers = ArcGISMapImageLayer(url)
-                hanhChinhImageLayers!!.id = layerInfo.layerId!!
-                mMapView!!.map.operationalLayers.add(hanhChinhImageLayers)
-                hanhChinhImageLayers!!.addDoneLoadingListener {
-
-                    if (hanhChinhImageLayers!!.loadStatus == LoadStatus.LOADED) {
-                        val sublayerList = hanhChinhImageLayers!!.sublayers
-                        for (sublayer in sublayerList) {
-                            addCheckBox_SubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerBaseMap!!)
-                            if (sublayer.id == Constant.IDMapLayer.HanhChinh) {
-                                mApplication!!.serviceFeatureTableHanhChinh = ServiceFeatureTable(url + "/" + sublayer.id)
-                            }
-                        }
-                    }
-                    size.decrementAndGet()
-                    if (size.get() == 0) {
-                        handlingLoadDone()
-                    }
-                }
-                hanhChinhImageLayers!!.loadAsync()
-
+    private fun setServices() {
+//        GlobalScope.launch {
+            if (mApplication!!.layerInfos == null) {
+                DAlertDialog().show(this@MainActivity, "Không tìm thấy lớp dữ liệu")
             } else {
-                val serviceFeatureTable = ServiceFeatureTable(url!!)
-                val featureLayer = FeatureLayer(serviceFeatureTable)
-                featureLayer.name = layerInfo.layerName
-                featureLayer.maxScale = 0.0
-                featureLayer.minScale = 1000000.0
-                featureLayer.id = layerInfo.layerId
-                val definition = layerInfo.definition
-                if (definition != null && definition != "null")
-                    featureLayer.definitionExpression = definition
-                val action = Action(layerInfo.isView, layerInfo.isCreate, layerInfo.isEdit, layerInfo.isDelete)
-                val featureLayerDTG = FeatureLayerDTG(featureLayer, layerInfo.layerName, action)
-                if (layerInfo.layerId != null && layerInfo.layerId == Constant.LayerID.DIEM_DANH_GIA) {
-                    mApplication!!.diemDanhGia = featureLayerDTG
-                    featureLayer.isPopupEnabled = true
-                    mMapViewHandler = MapViewHandler(featureLayerDTG, mMapView!!, this@MainActivity)
-                    traCuu = TraCuu(featureLayerDTG, this@MainActivity)
-
-                    mMap!!.operationalLayers.add(featureLayer)
-                    featureLayer.addDoneLoadingListener {
+                val size = AtomicInteger(mApplication!!.layerInfos!!.size)
+                for (layerInfo in mApplication!!.layerInfos!!) {
+                    if (!layerInfo.isView) {
                         size.decrementAndGet()
                         if (size.get() == 0) {
                             handlingLoadDone()
                         }
+                        continue
                     }
-                }
-                if (layerInfo.layerId != null && layerInfo.layerId == Constant.LayerID.MAU_DANH_GIA) {
-                    mApplication!!.mauKiemNghiem = featureLayerDTG
-                    size.decrementAndGet()
-                    if (size.get() == 0) {
-                        handlingLoadDone()
-                    }
-                } else if (taiSanImageLayers == null && layerInfo.layerId == Constant.LayerID.TRU_HONG) {
-                    taiSanImageLayers = ArcGISMapImageLayer(url.replaceFirst("FeatureServer(.*)".toRegex(), "MapServer"))
-                    taiSanImageLayers!!.name = layerInfo.layerName
-                    taiSanImageLayers!!.id = layerInfo.layerId!!
-                    //                    mArcGISMapImageLayerThematic.setMaxScale(0);
-                    //                    mArcGISMapImageLayerThematic.setMinScale(10000000);
-                    mMapView!!.map.operationalLayers.add(taiSanImageLayers)
-                    taiSanImageLayers!!.addDoneLoadingListener {
-                        if (taiSanImageLayers!!.loadStatus == LoadStatus.LOADED) {
-                            val sublayerList = taiSanImageLayers!!.sublayers
-                            for (sublayer in sublayerList) {
-                                addCheckBox_SubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerTaiSan!!)
+                    var url = layerInfo.url
+                    if (!layerInfo.url.startsWith("http"))
+                        url = "http:" + layerInfo.url
+                    if (layerInfo.layerId == Constant.LayerID.BASEMAP) {
+                        hanhChinhImageLayers = ArcGISMapImageLayer(url)
+                        hanhChinhImageLayers!!.id = layerInfo.layerId
+                        mMapView!!.map.operationalLayers.add(hanhChinhImageLayers)
+                        hanhChinhImageLayers!!.addDoneLoadingListener {
+
+                            if (hanhChinhImageLayers!!.loadStatus == LoadStatus.LOADED) {
+                                val sublayerList = hanhChinhImageLayers!!.sublayers
+                                for (sublayer in sublayerList) {
+                                    addCheckBoxSubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerBaseMap!!)
+                                    if (sublayer.id == Constant.IDMapLayer.HanhChinh) {
+                                        mApplication!!.serviceFeatureTableHanhChinh = ServiceFeatureTable(url + "/" + sublayer.id)
+
+//                                mApplication!!.serviceFeatureTableHanhChinh = sublayer.table
+                                    }
+                                }
+                            }
+                            size.decrementAndGet()
+                            if (size.get() == 0) {
+                                handlingLoadDone()
                             }
                         }
-                        size.decrementAndGet()
-                        if (size.get() == 0) {
-                            handlingLoadDone()
+                        hanhChinhImageLayers!!.loadAsync()
+
+                    } else {
+                        val serviceFeatureTable = ServiceFeatureTable(url)
+                        val featureLayer = FeatureLayer(serviceFeatureTable)
+                        featureLayer.name = layerInfo.layerName
+                        featureLayer.maxScale = 0.0
+                        featureLayer.minScale = 1000000.0
+                        featureLayer.id = layerInfo.layerId
+                        val definition = layerInfo.definition
+                        if (definition != "null")
+                            featureLayer.definitionExpression = definition
+                        val action = Action(layerInfo.isView, layerInfo.isCreate, layerInfo.isEdit, layerInfo.isDelete)
+                        val featureLayerDTG = FeatureLayerDTG(featureLayer, layerInfo.layerName, action)
+                        if (layerInfo.layerId == Constant.LayerID.DIEM_DANH_GIA) {
+                            mApplication!!.diemDanhGia = featureLayerDTG
+                            featureLayer.isPopupEnabled = true
+                            mMapViewHandler = MapViewHandler(featureLayerDTG, mMapView!!, this@MainActivity)
+                            traCuu = TraCuu(featureLayerDTG, this@MainActivity)
+
+                            mMap!!.operationalLayers.add(featureLayer)
+                            featureLayer.addDoneLoadingListener {
+                                size.decrementAndGet()
+                                if (size.get() == 0) {
+                                    handlingLoadDone()
+                                }
+                            }
+                        }
+                        if (layerInfo.layerId == Constant.LayerID.MAU_DANH_GIA) {
+                            mApplication!!.mauKiemNghiem = featureLayerDTG
+                            size.decrementAndGet()
+                            if (size.get() == 0) {
+                                handlingLoadDone()
+                            }
+                        } else if (taiSanImageLayers == null && layerInfo.layerId == Constant.LayerID.TRU_HONG) {
+                            taiSanImageLayers = ArcGISMapImageLayer(url.replaceFirst("FeatureServer(.*)".toRegex(), "MapServer"))
+                            taiSanImageLayers!!.name = layerInfo.layerName
+                            taiSanImageLayers!!.id = layerInfo.layerId
+                            //                    mArcGISMapImageLayerThematic.setMaxScale(0);
+                            //                    mArcGISMapImageLayerThematic.setMinScale(10000000);
+                            mMapView!!.map.operationalLayers.add(taiSanImageLayers)
+                            taiSanImageLayers!!.addDoneLoadingListener {
+                                if (taiSanImageLayers!!.loadStatus == LoadStatus.LOADED) {
+                                    val sublayerList = taiSanImageLayers!!.sublayers
+                                    for (sublayer in sublayerList) {
+                                        addCheckBoxSubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerTaiSan!!)
+                                    }
+                                }
+                                size.decrementAndGet()
+                                if (size.get() == 0) {
+                                    handlingLoadDone()
+                                }
+                            }
+                            taiSanImageLayers!!.loadAsync()
+                        } else {
+                            size.decrementAndGet()
+                            if (size.get() == 0) {
+                                handlingLoadDone()
+                            }
                         }
                     }
-                    taiSanImageLayers!!.loadAsync()
-                } else {
-                    size.decrementAndGet()
-                    if (size.get() == 0) {
-                        handlingLoadDone()
-                    }
+
                 }
             }
-
-        }
-
+//        }
     }
 
     private fun handlingLoadDone() {
@@ -390,8 +400,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mMapViewHandler!!.popupInfos = mPopup
         traCuu!!.setPopupInfos(mPopup!!)
         mMap!!.addDoneLoadingListener {
-            mLinnearDisplayLayerTaiSan = findViewById(R.id.linnearDisplayLayerTaiSan)
-            mLinnearDisplayLayerBaseMap = findViewById(R.id.linnearDisplayLayerBaseMap)
             val linnearDisplayLayer = findViewById<View>(R.id.linnearDisplayLayer) as LinearLayout
             val states = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
             val colors = intArrayOf(R.color.colorTextColor_1, R.color.colorTextColor_1)
@@ -402,8 +410,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     checkBox.isChecked = true
                     CompoundButtonCompat.setButtonTintList(checkBox, ColorStateList(states, colors))
                     linnearDisplayLayer.addView(checkBox)
-                    checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
-                        layer.isVisible = buttonView.isChecked
+                    checkBox.setOnCheckedChangeListener { _, isChecked ->
+                        layer.isVisible = isChecked
                     }
                 }
             }
@@ -416,13 +424,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun addCheckBox_SubLayer(layer: ArcGISMapImageSublayer, linearLayout: LinearLayout) {
+    private fun addCheckBoxSubLayer(layer: ArcGISMapImageSublayer, linearLayout: LinearLayout) {
         val checkBox = CheckBox(linearLayout.context)
         checkBox.text = layer.name
         checkBox.isChecked = false
         layer.isVisible = false
         CompoundButtonCompat.setButtonTintList(checkBox, ColorStateList(states, colors))
-        checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
+        checkBox.setOnCheckedChangeListener { buttonView, _ ->
             if (checkBox.isChecked) {
                 if (buttonView.text == layer.name)
                     layer.isVisible = true
@@ -436,18 +444,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         linearLayout.addView(checkBox)
     }
 
-    private fun getFieldsDTG(stringFields: String?): Array<String>? {
-        var returnFields: Array<String>? = null
-        if (stringFields != null) {
-            if (stringFields == "*" || stringFields == "") {
-                returnFields = arrayOf("*")
-            } else {
-                returnFields = stringFields.split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-            }
-
-        }
-        return returnFields
-    }
+//    private fun getFieldsDTG(stringFields: String?): Array<String>? {
+//        var returnFields: Array<String>? = null
+//        if (stringFields != null) {
+//            if (stringFields == "*" || stringFields == "") {
+//                returnFields = arrayOf("*")
+//            } else {
+//                returnFields = stringFields.split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
+//            }
+//
+//        }
+//        return returnFields
+//    }
 
     private fun setLicense() {
         //way 1
@@ -472,13 +480,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (!(permissionCheck1 && permissionCheck2)) {
                 // If permissions are not already granted, request permission from the user.
                 ActivityCompat.requestPermissions(this@MainActivity, reqPermissions, requestCode)
-            } else {
-                // Report other unknown failure types to the user - for example, location services may not
-                // be enabled on the device.
-                //                    String message = String.format("Error in DataSourceStatusChangedListener: %s", dataSourceStatusChangedEvent
-                //                            .getSource().getLocationDataSource().getError().getMessage());
-                //                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
             }
+//            else {
+            // Report other unknown failure types to the user - for example, location services may not
+            // be enabled on the device.
+            //                    String message = String.format("Error in DataSourceStatusChangedListener: %s", dataSourceStatusChangedEvent
+            //                            .getSource().getLocationDataSource().getError().getMessage());
+            //                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+//            }
         })
     }
 
@@ -503,7 +512,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                if (newText.length == 0) {
+                if (newText.isEmpty()) {
                     mDiaChiAdapter!!.clear()
                     mDiaChiAdapter!!.notifyDataSetChanged()
                 }
@@ -530,28 +539,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
-        val id = item.itemId
-        if (id == R.id.nav_thongke) {
-            val intent = Intent(this, ThongKeActivity::class.java)
-            this.startActivityForResult(intent, requestCode)
-        } else if (id == R.id.nav_tracuu) {
-            //            final Intent intent = new Intent(this, TraCuuActivity.class);
-            //            this.startActivityForResult(intent, 1);
-            traCuu!!.start()
-        } else if (id == R.id.nav_logOut) {
-            startSignIn()
+        when (item.itemId) {
+            R.id.nav_thongke -> {
+                val intent = Intent(this, ThongKeActivity::class.java)
+                this.startActivityForResult(intent, requestCode)
+            }
+            R.id.nav_tracuu -> {
+                //            final Intent intent = new Intent(this, TraCuuActivity.class);
+                //            this.startActivityForResult(intent, 1);
+                traCuu!!.start()
+            }
+            R.id.nav_logOut -> {
+                startSignIn()
+            }
         }
         val drawer = findViewById<DrawerLayout>(R.id.container_main)
         drawer.closeDrawer(GravityCompat.START)
         return true
     }
 
-    private fun requestPermisson(): Boolean {
+    private fun requestPermission(): Boolean {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA, Manifest.permission.READ_PHONE_STATE), REQUEST_ID_IMAGE_CAPTURE)
         }
         return !(Build.VERSION.SDK_INT >= 23 &&
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
 
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
     }
@@ -613,7 +625,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun addFeature(dAddress: DAddress? = null) {
+    private fun addFeature(dAddress: DAddress? = null) {
         mApplication?.statusCode = Constant.StatusCode.IS_ADDING.value
         if (dAddress != null) {
             mApplication?.center = dAddress.point
@@ -622,12 +634,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
         mMapViewHandler?.addGraphic(mApplication?.center!!)
 
-        if(mApplication!!.diemDanhGia != null)
+        if (mApplication!!.diemDanhGia != null)
             mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
-                mApplication?.diemDanhGia!!.featureLayer.featureTable as ServiceFeatureTable)
+                    mApplication?.diemDanhGia!!.featureLayer.featureTable as ServiceFeatureTable)
     }
 
-    fun showMenuAddAttachment() {
+    fun showMenuAddAttachment(address: String) {
+        mAddress = address
         SheetMenu(
                 context = this,
                 title = "Thêm ảnh",
@@ -651,7 +664,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         ).show(this)
     }
 
-    fun capture() {
+    private fun capture() {
         mApplication?.bitmaps = null
         val cameraIntent = Intent(this, CameraActivity::class.java)
         startActivityForResult(cameraIntent, Constant.Request.CAMERA)
@@ -659,12 +672,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     }
 
-    fun pick() {
+    private fun pick() {
         mApplication?.bitmaps = null
         val intent = Intent(this, AlbumSelectActivity::class.java)
 //set limit on number of images that can be selected, default is 10
         intent.putExtra(Constants.INTENT_EXTRA_LIMIT, 3)
-        startActivityForResult(intent, Constants.REQUEST_CODE);
+        startActivityForResult(intent, Constants.REQUEST_CODE)
     }
 
     @SuppressLint("ResourceAsColor")
@@ -711,10 +724,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Constants.REQUEST_CODE -> if (resultCode == RESULT_OK && data != null) {
                 //The array list has the image paths of the selected images
                 val images: ArrayList<Image> = data.getParcelableArrayListExtra(Constants.INTENT_EXTRA_IMAGES)
-                var bitmaps = arrayListOf<Bitmap>()
+                val bitmaps = arrayListOf<Bitmap>()
                 images.forEach { image ->
                     run {
-                        val imgFile = File(image.path);
+                        val imgFile = File(image.path)
 
                         if (imgFile.exists()) {
 
@@ -727,32 +740,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 mApplication?.bitmaps = bitmaps
                 try {
                     if (mApplication?.diemDanhGia != null) {
-//                        mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
-//                                mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
-                        mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
-                    } else {
-
+                        mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, mAddress, null)
                     }
                 } catch (e: Exception) {
                     DAlertDialog().show(this@MainActivity, e)
                 }
             }
             Constant.Request.CAMERA -> if (resultCode == Activity.RESULT_OK) {
-//            }
                 if (mApplication!!.bitmaps != null) {
                     try {
                         if (mApplication?.diemDanhGia != null) {
-//                            mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
-//                                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
-                            mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
-                        } else {
-
+                            mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, mAddress, null)
                         }
                     } catch (e: Exception) {
                         DAlertDialog().show(this@MainActivity, e)
                     }
                 }
-//                    }
             } else {
                 //todo: clear graphic
                 cancelAdd()
@@ -775,9 +778,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     companion object {
-        private val LATITUDE = 10.10299
-        private val LONGTITUDE = 105.9295304
-        private val LEVEL_OF_DETAIL = 12
-        private val REQUEST_ID_IMAGE_CAPTURE = 55
+        private const val LATITUDE = 10.10299
+        private const val LONGTITUDE = 105.9295304
+        private const val LEVEL_OF_DETAIL = 12
+        private const val REQUEST_ID_IMAGE_CAPTURE = 55
     }
 }

@@ -81,7 +81,7 @@ class AddAttachmentsAsync(private val mActivity: Activity, private val mBitmaps:
 
     override fun onProgressUpdate(vararg values:  List<Attachment>) {
         super.onProgressUpdate(*values)
-        mApplication.progressDialog?.dismiss()
+        mApplication.progressDialog?.dismiss(mActivity)
         delegate!!.processFinish(values.first())
         mApplication.bitmaps = null
     }

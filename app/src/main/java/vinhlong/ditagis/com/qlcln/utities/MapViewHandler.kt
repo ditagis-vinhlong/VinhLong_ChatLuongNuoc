@@ -126,8 +126,8 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 //        singleTapAdddFeatureAsync.execute(add_point)
 //    }
 
-    fun addFeature(point: Point?, bitmaps: ArrayList<Bitmap>) {
-        AddFeatureAsync(mMainActivity, bitmaps, mServiceFeatureTable, object : AddFeatureAsync.AsyncResponse {
+    fun addFeature(point: Point?, bitmaps: ArrayList<Bitmap>, address: String) {
+        AddFeatureAsync(mMainActivity, bitmaps, mServiceFeatureTable, address, object : AddFeatureAsync.AsyncResponse {
             override fun processFinish(o: Any) {
                 if (o is ArcGISFeature) {
                     mApplication.selectedFeature = o
@@ -296,7 +296,7 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
         val findLocationAsycn = FindLocationTask(mMainActivity,
                 true, object : FindLocationTask.AsyncResponse {
             override fun processFinish(output: List<DAddress>?) {
-                mApplication.progressDialog.dismiss()
+                mApplication.progressDialog.dismiss(mMainActivity)
                 if (output != null) {
                     if (output.isNotEmpty()) {
                         for (address in output) {

@@ -53,7 +53,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
     init {
         this.mServiceFeatureTable = mApplication.diemDanhGia!!.featureLayer.featureTable as ServiceFeatureTable
         this.featureLayerDTG_MauDanhGia = mApplication.mauKiemNghiem
-        this.editingMauKiemNghiem =  EditingMauKiemNghiem(mMainActivity, featureLayerDTG_MauDanhGia!!, mServiceFeatureTable)
+        this.editingMauKiemNghiem = EditingMauKiemNghiem(mMainActivity, featureLayerDTG_MauDanhGia!!, mServiceFeatureTable)
 
     }
 
@@ -163,6 +163,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
         lstView.adapter = adapter
         lstView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id -> edit(parent, view, position, id) }
         val updateFields = mApplication.diemDanhGia!!.updateFields
+        val unedit_Fields = mMainActivity.resources.getStringArray(R.array.unedit_Fields)
         val typeIdField = mSelectedArcGISFeature!!.featureTable.typeIdField
         for (field in this.mSelectedArcGISFeature!!.featureTable.fields) {
             val value = attr[field.name]
@@ -190,16 +191,21 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
                         }
                 }
                 item.isEdit = false
-                if (updateFields!!.size > 0) {
-                    if (updateFields[0] == "*" || updateFields[0] == "") {
-                        item.isEdit = true
-                    } else {
-                        for (updateField in updateFields) {
-                            if (item.fieldName == updateField) {
-                                item.isEdit = true
-                                break
-                            }
+                if (updateFields == null || (updateFields.isNotEmpty() && (updateFields[0] == "*" || updateFields[0] == ""))) {
+                    item.isEdit = true
+                } else {
+                    for (updateField in updateFields) {
+                        if (item.fieldName == updateField) {
+                            item.isEdit = true
+                            break
                         }
+
+                    }
+                }
+                for (unedit_Field in unedit_Fields) {
+                    if (unedit_Field.equals(item.fieldName!!, ignoreCase = true)) {
+                        item.isEdit = false
+                        break
                     }
                 }
                 item.fieldType = field.fieldType
@@ -230,16 +236,17 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
                                 parameters.isReturnGeometry = true
                                 parameters.whereClause = String.format("OBJECTID = %d", o)
                                 QueryFeatureAsync(mMainActivity, mSelectedArcGISFeature!!.featureTable as ServiceFeatureTable,
-                                        object: QueryFeatureAsync.AsyncResponse {
+                                        object : QueryFeatureAsync.AsyncResponse {
                                             override fun processFinish(o: List<Feature>) {
 
-                                    if (o.isNotEmpty()) {
-                                        showPopup(o.first() as ArcGISFeature)
-                                        dialog.dismiss()
-                                    } else {
-                                        Snackbar.make(layout, "Có lỗi xảy ra", Snackbar.LENGTH_SHORT).show()
-                                    }
-                                }}).execute(parameters)
+                                                if (o.isNotEmpty()) {
+                                                    showPopup(o.first() as ArcGISFeature)
+                                                    dialog.dismiss()
+                                                } else {
+                                                    Snackbar.make(layout, "Có lỗi xảy ra", Snackbar.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }).execute(parameters)
                             } else {
                                 DAlertDialog().show(mMainActivity, "Thông báo", "Cập nhật thất bại")
                             }
@@ -418,7 +425,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
 //                val geometry = GeometryEngine.project(pointLongLat, SpatialReferences.getWgs84())
 //                val geometry1 = GeometryEngine.project(geometry, SpatialReferences.getWebMercator())
 //                point = geometry1.extent.center
-               mMainActivity.showMenuAddAttachment()
+                mMainActivity.showMenuAddAttachment(txtAddress.text.toString())
             }
             linearLayout!!.findViewById<ImageButton>(R.id.imgBtn_dialog_search_address_cancel)
                     .setOnClickListener { handlingCancelAdd() }
@@ -445,7 +452,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
 
 
         } catch (e: Exception) {
-            mApplication.progressDialog.dismiss()
+            mApplication.progressDialog.dismiss(mMainActivity)
             DAlertDialog().show(mMainActivity, e)
 
         }
@@ -453,13 +460,13 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
 
     }
 
-    fun handlingAddFeatureOrChangeGeometry(point: Point?, address: String?, feature: Feature?) {
+    fun handlingAddFeatureOrChangeGeometry(point: Point?, address: String, feature: Feature?) {
         try {  //call handlingcanceladd
             mCallout?.dismiss()
 
 //            when (mApplication.statusCode) {
 //                Constant.StatusCode.IS_ADDING.value ->
-            mMainActivity.getMapViewHandler()?.addFeature(point, mApplication.bitmaps!!)
+            mMainActivity.getMapViewHandler()?.addFeature(point, mApplication.bitmaps!!, address)
 //                Constant.StatusCode.IS_CHANGING_GEOMETRY.value -> point?.let {
 //                    feature?.let { feature -> mMainActivity.getMapViewHandler()?.editFeature(it, feature, serviceFeatureTable!!, mApplication.bitmaps) }
 //                }
@@ -506,12 +513,10 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
                                     editingMauKiemNghiem.deleteDanhSachMauDanhGia(mSelectedArcGISFeature!!)
                                     if (!edits[0].hasCompletedWithErrors()) {
                                         DAlertDialog().show(mMainActivity, "Thông báo", "Xóa thành công!")
-                                    }
-                                    else{
+                                    } else {
                                         DAlertDialog().show(mMainActivity, "Thông báo", "Xóa thất bại")
                                     }
-                                }
-                                else {
+                                } else {
                                     DAlertDialog().show(mMainActivity, "Thông báo", "Xóa thất bại")
                                 }
                             } catch (e: Exception) {

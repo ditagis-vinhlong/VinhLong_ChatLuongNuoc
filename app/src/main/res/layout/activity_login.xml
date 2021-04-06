@@ -58,7 +58,7 @@
             android:background="@drawable/layout_edittext_none_border"
             android:hint="Nhập tên đăng nhập"
             android:inputType="text"
-            android:maxLength="11"
+            android:maxLength="50"
             android:maxLines="1"
             android:nextFocusDown="@+id/txtPassword"
             android:textColor="@color/colorTextLogin_1"

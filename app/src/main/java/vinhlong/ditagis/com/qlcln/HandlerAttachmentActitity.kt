@@ -56,7 +56,7 @@ class HandlerAttachmentActivity : AppCompatActivity() {
 
                     DBitmap().getByteArray((img_view_attachment.drawable as BitmapDrawable).bitmap), object : UpdateAttachmentAsync.AsyncResponse {
                 override fun processFinish(o: Any) {
-                    mApplication.progressDialog.dismiss()
+                    mApplication.progressDialog.dismiss(this@HandlerAttachmentActivity)
 
                     if (o is Boolean) {
                         if (o) {

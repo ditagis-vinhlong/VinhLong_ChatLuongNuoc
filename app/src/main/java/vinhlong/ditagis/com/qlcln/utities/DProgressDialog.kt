@@ -26,7 +26,7 @@ class DProgressDialog {
         mDialog!!.setContentView(mLayout!!)
 
 
-        if (mDialog != null && mDialog!!.isShowing)
+        if (!activity.isFinishing && mDialog != null && mDialog!!.isShowing)
             mDialog!!.dismiss()
         mDialog!!.show()
     }
@@ -39,8 +39,8 @@ class DProgressDialog {
         }
     }
 
-    fun dismiss() {
-        if (mDialog != null && mDialog!!.isShowing)
+    fun dismiss(activity: Activity) {
+        if (!activity.isFinishing && mDialog != null && mDialog!!.isShowing)
             mDialog!!.dismiss()
     }
 }

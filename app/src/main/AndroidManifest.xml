@@ -3,6 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="vinhlong.ditagis.com.qlcln">
 
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera2" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:name=".entities.DApplication"
         android:allowBackup="true"
@@ -14,10 +26,6 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="m">
-        <activity android:name=".ShowCaptureActivity" />
-        <activity android:name=".HandlerAttachmentActivity" android:parentActivityName=".AttachmentActivity" />
-        <activity android:name=".AttachmentActivity" android:parentActivityName=".MainActivity" />
-        <activity android:name=".CameraActivity"/>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -30,6 +38,18 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ShowCaptureActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".HandlerAttachmentActivity"
+            android:parentActivityName=".AttachmentActivity" />
+        <activity
+            android:name=".AttachmentActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".CameraActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".LoginActivity"
             android:label="@string/app_name" />
         <activity
@@ -37,15 +57,5 @@
             android:label="Thống kê"
             android:parentActivityName=".MainActivity" />
     </application>
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera2" />
 
-    <uses-feature android:name="android.hardware.camera.autofocus" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 </manifest>

@@ -4,12 +4,12 @@
 
     <item
         android:id="@+id/attachment_item_view"
-        android:icon="@drawable/ic_attachment"
+        android:icon="@drawable/ic_attachment_black"
         android:title="Xem ảnh" />
     <item
         android:id="@+id/attachment_item_delete"
-        android:icon="@drawable/ic_camera"
-
+        android:icon="@drawable/ic_delete"
+android:iconTint="@android:color/holo_red_dark"
         android:title="Xóa ảnh" />
 
 </menu>

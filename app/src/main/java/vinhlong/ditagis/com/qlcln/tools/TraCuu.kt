@@ -299,7 +299,8 @@ class TraCuu(private val featureLayerDTG: FeatureLayerDTG, private val mainActiv
         val queryFields = featureLayerDTG.queryFields
         val fields = serviceFeatureTable.fields
         for (field in fields) {
-            if (queryFields!![0] == "*" || queryFields[0] == "") {
+            if (queryFields == null || (queryFields.isNotEmpty() && (queryFields[0] == "*" || queryFields[0] == ""))) {
+
                 val item = TraCuuChiTietDiemDanhGiaAdapter.Item()
                 item.fieldName = field.name
                 item.alias = field.alias

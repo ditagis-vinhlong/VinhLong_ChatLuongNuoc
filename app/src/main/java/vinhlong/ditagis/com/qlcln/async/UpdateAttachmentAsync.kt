@@ -76,7 +76,7 @@ private val mServiceFeatureTable = mFeature.featureTable as ServiceFeatureTable
     }
     override fun onProgressUpdate(vararg values: Any) {
         super.onProgressUpdate(*values)
-        mApplication.progressDialog?.dismiss()
+        mApplication.progressDialog?.dismiss(mActivity)
         delegate!!.processFinish(values[0])
         mApplication.bitmaps = null
     }

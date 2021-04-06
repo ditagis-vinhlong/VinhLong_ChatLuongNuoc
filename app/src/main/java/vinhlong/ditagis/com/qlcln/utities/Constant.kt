@@ -38,7 +38,11 @@ object Constant {
         val TEN_HUYEN = "TenHuyen"
         val TEN_HANH_CHINH = "TenHanhChinh"
     }
+    object Field{
+        const val OBJECT_ID = "OBJECTID"
 
+        val NONE_SHOW_FIELDS = arrayOf(OBJECT_ID)
+    }
     object HTTPRequest {
         const val GET_METHOD = "GET"
         const val POST_METHOD = "POST"

@@ -8,9 +8,7 @@ import android.widget.TextView
 import com.esri.arcgisruntime.data.Feature
 import com.esri.arcgisruntime.data.QueryParameters
 import com.esri.arcgisruntime.data.ServiceFeatureTable
-import vinhlong.ditagis.com.qlcln.MainActivity
 import vinhlong.ditagis.com.qlcln.R
-import vinhlong.ditagis.com.qlcln.ThongKeActivity
 import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter
 import java.util.*
 

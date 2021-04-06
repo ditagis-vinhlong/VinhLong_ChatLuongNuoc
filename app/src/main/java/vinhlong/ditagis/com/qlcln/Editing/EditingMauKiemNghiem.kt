@@ -322,7 +322,7 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
                     
                 }
                 for (unedit_Field in unedit_Fields) {
-                    if (unedit_Field.toUpperCase() == item.fieldName!!.toUpperCase()) {
+                    if (unedit_Field.equals(item.fieldName!!, ignoreCase = true)) {
                         item.isEdit = false
                         break
                     }

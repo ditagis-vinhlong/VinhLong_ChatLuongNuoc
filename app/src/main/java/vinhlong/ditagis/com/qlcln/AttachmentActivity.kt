@@ -110,7 +110,7 @@ class AttachmentActivity : AppCompatActivity() {
                                                                     object : DeleteAttachmentAsync.AsyncResponse {
                                                                         override fun processFinish(o: Any) {
                                                                             mApplication.bitmaps = null
-                                                                            mApplication.progressDialog.dismiss()
+                                                                            mApplication.progressDialog.dismiss(this@AttachmentActivity)
                                                                             if (o is Boolean && o) {
                                                                                 DAlertDialog().show(this@AttachmentActivity, "Thông báo", "Xóa ảnh thành công!")
                                                                                 mAdapter.remove(attachmentItem)
@@ -270,7 +270,7 @@ class AttachmentActivity : AppCompatActivity() {
 
     fun addAttachmentsDone(o: List<Attachment>) {
         mApplication.bitmaps = null
-        mApplication.progressDialog.dismiss()
+        mApplication.progressDialog.dismiss(this@AttachmentActivity)
         if (o.isNotEmpty()) {
             o.forEach { attachment ->
                 run {

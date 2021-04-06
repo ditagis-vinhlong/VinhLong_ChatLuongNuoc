@@ -23,7 +23,7 @@ import java.util.*
 
 class ThongKeActivity : AppCompatActivity() {
     private var txtTongItem: TextView? = null
-    private var serviceFeatureTable: ServiceFeatureTable? = null
+    private var mServiceFeatureTable: ServiceFeatureTable? = null
     private var thongKeAdapter: ThongKeAdapter? = null
     private lateinit var mApplication: DApplication
     protected override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,14 +31,7 @@ class ThongKeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_thong_ke)
         mApplication = application as DApplication
         var items: MutableList<ThongKeAdapter.Item>? = ArrayList<ThongKeAdapter.Item>()
-        for (layerInfo in mApplication.layerInfos!!) {
-            if (layerInfo.layerId != null && layerInfo.layerId == Constant.LayerID.DIEM_DANH_GIA) {
-                var url = layerInfo.url
-                if (!layerInfo.url!!.startsWith("http"))
-                    url = "http:" + layerInfo.url!!
-                serviceFeatureTable = ServiceFeatureTable(url!!)
-            }
-        }
+        mServiceFeatureTable = mApplication.diemDanhGia!!.featureLayer.featureTable as ServiceFeatureTable
 
 
         val timePeriodReport = TimePeriodReport(this)
@@ -199,8 +192,8 @@ class ThongKeActivity : AppCompatActivity() {
                 finish()
             }
         })
-        if (serviceFeatureTable != null)
-            QueryDiemDanhGiaAsync(this, serviceFeatureTable!!, txtTongItem!!, adapter, object : QueryDiemDanhGiaAsync.AsyncResponse {
+        if (mServiceFeatureTable != null)
+            QueryDiemDanhGiaAsync(this, mServiceFeatureTable!!, txtTongItem!!, adapter, object : QueryDiemDanhGiaAsync.AsyncResponse {
                  override fun processFinish(features: List<Feature>) {}
             }).execute(whereClause)
     }

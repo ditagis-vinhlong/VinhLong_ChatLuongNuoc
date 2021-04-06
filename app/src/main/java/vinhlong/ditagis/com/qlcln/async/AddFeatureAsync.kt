@@ -1,6 +1,5 @@
 package vinhlong.ditagis.com.qlcln.async
 
-import android.R
 import android.app.Activity
 import android.app.ProgressDialog
 import android.graphics.Bitmap
@@ -19,13 +18,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
-                      val mServiceFeatureTable: ServiceFeatureTable, val mDelegate: AsyncResponse) : AsyncTask<Point, Any, Void?>() {
+                      val mServiceFeatureTable: ServiceFeatureTable, val mAddress: String, val mDelegate: AsyncResponse) : AsyncTask<Point, Any, Void?>() {
     private val mDialog: ProgressDialog?
     private val mApplication = mActivity.application as DApplication
     private var loc = LocatorTask("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer")
 
     init {
-        mDialog = ProgressDialog(mActivity, R.style.Theme_Material_Dialog_Alert)
+        mDialog = ProgressDialog(mActivity, android.R.style.Theme_Material_Dialog_Alert)
     }
 
     interface AsyncResponse {
@@ -56,61 +55,49 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
         val clickPoint = params[0]
         val feature = mServiceFeatureTable.createFeature()
         feature.geometry = clickPoint
-        val listListenableFuture = loc.reverseGeocodeAsync(clickPoint)
-        listListenableFuture.addDoneListener {
-            try {
-                val geocodeResults = listListenableFuture.get()
-                if (geocodeResults.size > 0) {
-                    val geocodeResult = geocodeResults[0]
-                    val attrs = HashMap<String, Any>()
-                    for (key in geocodeResult.attributes.keys) {
-                        geocodeResult.attributes[key]?.let { attrs.put(key, it) }
-                    }
-                    val address = geocodeResult.attributes["LongLabel"].toString()
-                    feature.attributes[Constant.DIACHI] = address
-                }
-                var searchStr = ""
-                var dateTime = ""
-                var timeID = ""
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                    dateTime = dateString
-                    timeID = timeID
-                    searchStr = Constant.IDDIEM_DANH_GIA + " like '%" + timeID + "'"
-                }
-                val queryParameters = QueryParameters()
-                queryParameters.whereClause = searchStr
-                val featureQuery = mServiceFeatureTable.queryFeaturesAsync(queryParameters)
-                val finalDateTime = dateTime
-                val finalTimeID = timeID
 
+        feature.attributes[Constant.DIACHI] = mAddress
 
-                featureQuery.addDoneListener {
-                    var queryParameters = QueryParameters()
-                    queryParameters.geometry = clickPoint
-                    var listenableFuture = mApplication.serviceFeatureTableHanhChinh!!.queryFeaturesAsync(queryParameters, ServiceFeatureTable.QueryFeatureFields.LOAD_ALL)
-                    listenableFuture.addDoneListener {
-                        try {
-                            var featureQueryResult = listenableFuture.get()
-                            val iterator = featureQueryResult.iterator()
-
-                            while (iterator.hasNext()) {
-                                val featureHanhChinh = iterator.next() as Feature
-                                feature.attributes[Constant.FieldChatLuongNuoc.MA_HUYEN] = featureHanhChinh.attributes[Constant.FieldHanhChinh.MA_HUYEN]
-                                feature.attributes[Constant.FieldChatLuongNuoc.MA_XA] = featureHanhChinh.attributes[Constant.FieldHanhChinh.ID_HANH_CHINH]
-                            }
-                            addFeatureAsync(featureQuery, feature, finalTimeID, finalDateTime)
-                        }
-                        catch (e: Exception){
-                            publishProgress(e.toString())
-                        }
-                    }
-
-
-                }
-            } catch (e: Exception) {
-                publishProgress(e.toString())
-            }
+        var searchStr = ""
+        var dateTime = ""
+        var timeID = ""
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            dateTime = dateString
+            timeID = timeID
+            searchStr = Constant.IDDIEM_DANH_GIA + " like '%" + timeID + "'"
         }
+        val queryParameters = QueryParameters()
+        queryParameters.whereClause = searchStr
+        val featureQuery = mServiceFeatureTable.queryFeaturesAsync(queryParameters)
+        val finalDateTime = dateTime
+        val finalTimeID = timeID
+
+
+        featureQuery.addDoneListener {
+            var queryParameters = QueryParameters()
+            queryParameters.geometry = clickPoint
+//                    queryParameters.whereClause = "1 = 1"
+            var listenableFuture = mApplication.serviceFeatureTableHanhChinh!!.queryFeaturesAsync(queryParameters, ServiceFeatureTable.QueryFeatureFields.LOAD_ALL)
+            listenableFuture.addDoneListener {
+                try {
+                    var featureQueryResult = listenableFuture.get()
+                    val iterator = featureQueryResult.iterator()
+
+                    while (iterator.hasNext()) {
+                        val featureHanhChinh = iterator.next() as Feature
+                        feature.attributes[Constant.FieldChatLuongNuoc.MA_HUYEN] = featureHanhChinh.attributes[Constant.FieldHanhChinh.MA_HUYEN]
+                        feature.attributes[Constant.FieldChatLuongNuoc.MA_XA] = featureHanhChinh.attributes[Constant.FieldHanhChinh.ID_HANH_CHINH]
+                    }
+                    addFeatureAsync(featureQuery, feature)
+                } catch (e: Exception) {
+//                            publishProgress(e.toString())
+                    addFeatureAsync(featureQuery, feature)
+                }
+            }
+
+
+        }
+
 
         return null
     }
@@ -121,7 +108,7 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
 
     }
 
-    private fun addFeatureAsync(featureQuery: ListenableFuture<FeatureQueryResult>, feature: Feature, finalTimeID: String, finalDateTime: String) {
+    private fun addFeatureAsync(featureQuery: ListenableFuture<FeatureQueryResult>, feature: Feature) {
         try {
             // lấy stt_id lớn nhất
             var id_tmp: Int
@@ -134,10 +121,11 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                 if (id_tmp > stt_id) stt_id = id_tmp
             }
             stt_id++
+            val timeID = Calendar.getInstance().timeInMillis
             if (stt_id < 10) {
-                feature.attributes[Constant.IDDIEM_DANH_GIA] = "0" + stt_id + "_" + finalTimeID
+                feature.attributes[Constant.IDDIEM_DANH_GIA] = "0" + stt_id + "_" + timeID
             } else
-                feature.attributes[Constant.IDDIEM_DANH_GIA] = stt_id.toString() + "_" + finalTimeID
+                feature.attributes[Constant.IDDIEM_DANH_GIA] = stt_id.toString() + "_" + timeID
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 val c = Calendar.getInstance()
@@ -184,8 +172,8 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                         addResult.addDoneListener {
                             try {
                                 val attachment = addResult.get()
-                                added ++
-                                if( added == mBitmaps.size){
+                                added++
+                                if (added == mBitmaps.size) {
                                     val tableResult = mServiceFeatureTable.updateFeatureAsync(arcGISFeature!!)
                                     tableResult.addDoneListener {
                                         val updatedServerResult = mServiceFeatureTable.applyEditsAsync()
@@ -196,8 +184,7 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                                                 if (edits!!.size > 0) {
                                                     if (!edits[0].hasCompletedWithErrors()) {
                                                         publishProgress(arcGISFeature)
-                                                    }
-                                                    else publishProgress("Thêm ảnh thất bại!")
+                                                    } else publishProgress("Thêm ảnh thất bại!")
                                                 }
                                             } catch (e: Exception) {
                                                 publishProgress(e.toString())
