@@ -49,7 +49,7 @@ import kotlin.math.roundToInt
 class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val mMapView: MapView, private val mMainActivity: MainActivity) : Activity() {
     private var mGraphicsOverlay: GraphicsOverlay = GraphicsOverlay()
     private val mMap: ArcGISMap = mMapView.map
-    private val suCoTanHoaLayer: FeatureLayer = mFeatureLayerDTG.featureLayer
+    private val mFeatureLayer: FeatureLayer = mFeatureLayerDTG.featureLayer
     private val mApplication = mMainActivity.application as DApplication
     private var mClickPoint: android.graphics.Point? = null
     private var mSelectedArcGISFeature: ArcGISFeature? = null
@@ -107,15 +107,10 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
                 mMainActivity.mapView.setViewpointCenterAsync(mApplication.center)
             }
             addGraphic(mApplication.center!!)
-            if (mApplication?.featureLayerDiemDanhGia != null){
-                mMainActivity.getPopUp()!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
+            if(mApplication.diemDanhGia != null)
+            mMainActivity.getPopUp()!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
 
-                        mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
-
-            }
-            else{
-
-            }
+                    mApplication.diemDanhGia!!.featureLayer.featureTable as ServiceFeatureTable)
 
         } catch (ex: Exception) {
             Toast.makeText(mMainActivity.mapView.context, "Có lỗi xảy ra khi hiển thị cửa sổ", Toast.LENGTH_LONG).show()
@@ -241,7 +236,6 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 
     private fun showPopup(selectedFeature: Feature?) {
         if (selectedFeature != null) {
-            popupInfos!!.setFeatureLayerDTG(mFeatureLayerDTG)
             popupInfos!!.showPopup(selectedFeature as ArcGISFeature)
         }
     }
@@ -334,7 +328,7 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 
         override fun doInBackground(vararg params: Point): Void? {
             val clickPoint = params[0]
-            @SuppressLint("WrongThread") val identifyFuture = mMapView.identifyLayerAsync(suCoTanHoaLayer, mClickPoint!!, 5.0, false, 1)
+            @SuppressLint("WrongThread") val identifyFuture = mMapView.identifyLayerAsync(mFeatureLayer, mClickPoint!!, 5.0, false, 1)
             identifyFuture.addDoneListener {
                 try {
                     val layoutInflater = LayoutInflater.from(mContext)
@@ -360,7 +354,6 @@ class MapViewHandler(private val mFeatureLayerDTG: FeatureLayerDTG, private val 
 
         override fun onProgressUpdate(vararg values: Void) {
             super.onProgressUpdate(*values)
-            popupInfos!!.setFeatureLayerDTG(mFeatureLayerDTG)
             if (mSelectedArcGISFeature != null)
                 popupInfos!!.showPopup(mSelectedArcGISFeature!!)
             else

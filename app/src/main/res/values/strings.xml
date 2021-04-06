@@ -31,19 +31,15 @@
     <!--Name-->
     <string name="name_diemdanhgianuoc">DiemDanhGia</string>
     <string name="name_maudanhgia">HoSo_MauDanhGia</string>
-    <string name="id_diemdanhgianuoc">diemdanhgiaLYR</string>
-    <string name="id_maudanhgia">maukiemnghiemTBL</string>
     <!--DeclngayCapNhatalue config end-->
 
     <!--Attribute begin-->
     <string name="OBJECTID">OBJECTID</string>
-    <string name="IDDIEMDANHGIA">IDDiemDanhGia</string>
     <string name="NGAY_CAP_NHAT">NgayCapNhat</string>
     <!--Attribute end-->
     <string name="DIACHI">DiaChi</string>
 
     <!--Attribute MauKiemNghiem Begin-->TenMau
-    <string name="IDMAUKIEMNGHIEM">IDMauKiemNghiem</string>
     <string name="TENMAU">TenMau</string>
     <!--Attribute MauKiemNghiem End-->
 
@@ -88,9 +84,6 @@
     <string name="name_nhanvien">Nhân viên A</string>
 
     <!--preference begin-->
-    <string name="preference_username">username</string>
-    <string name="preference_password">pasword</string>
-    <string name="preference_displayname">displayname</string>
     <!--preference end-->
 
     <string name="action_logout">Đăng xuất</string>

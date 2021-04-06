@@ -57,12 +57,13 @@ import vinhlong.ditagis.com.qlcln.adapter.DiaChiAdapter
 import vinhlong.ditagis.com.qlcln.async.PreparingAsycn
 import vinhlong.ditagis.com.qlcln.entities.DAddress
 import vinhlong.ditagis.com.qlcln.entities.DApplication
-import vinhlong.ditagis.com.qlcln.entities.entitiesDB.ListObjectDB
+import vinhlong.ditagis.com.qlcln.entities.DLayerInfo
 import vinhlong.ditagis.com.qlcln.libs.Action
 import vinhlong.ditagis.com.qlcln.libs.FeatureLayerDTG
 import vinhlong.ditagis.com.qlcln.tools.TraCuu
 import vinhlong.ditagis.com.qlcln.utities.*
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
@@ -71,7 +72,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var mMapView: MapView? = null
     private var mMap: ArcGISMap? = null
     private var mCallout: Callout? = null
-    private var mFeatureLayerDTGS: MutableList<FeatureLayerDTG>? = null
     private var mMapViewHandler: MapViewHandler? = null
     private var mTxtSearch: SearchView? = null
     private var mListViewSearch: ListView? = null
@@ -103,10 +103,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun getPopUp(): Popup? {
         return this.mPopup
     }
+
     fun isAddingFeatureOrChangingGeometry(): Boolean {
         return mApplication?.statusCode == Constant.StatusCode.IS_ADDING.value ||
                 mApplication?.statusCode == Constant.StatusCode.IS_CHANGING_GEOMETRY.value
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quan_ly_chat_luong_nuoc)
@@ -116,8 +118,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initListViewSearch()
 
         initLayerListView()
-        nav_view!!.menu.add(1, 1, 1, Constant.SERVER_API.removeSuffix("/api"))
-        nav_view!!.menu.add(1, 1, 1,"v"+ packageManager.getPackageInfo(packageName, 0).versionName)
+//        nav_view!!.menu.add(1, 1, 1, Constant.SERVER_API.removeSuffix("/api"))
+        nav_view!!.menu.add(1, 1, 1, "v" + packageManager.getPackageInfo(packageName, 0).versionName)
         setOnClickListener()
         startGPS()
         startSignIn()
@@ -232,10 +234,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mMapView!!.map = mMap
         mCallout = mMapView!!.callout
 
-        val preparingAsycn = PreparingAsycn(this, object : PreparingAsycn.AsyncResponse {
-            override fun processFinish(output: Void?) {
-
-                ListObjectDB.getInstance().lstFeatureLayerDTG
+        val preparingAsycn = PreparingAsycn(this, mApplication!!, object : PreparingAsycn.AsyncResponse {
+            override fun processFinish(output: List<DLayerInfo>?) {
+                mApplication!!.layerInfos = output
                 setFeatureService()
             }
         })
@@ -267,14 +268,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         cb_Layer_HanhChinh = findViewById(R.id.cb_Layer_HanhChinh)
         cb_Layer_TaiSan = findViewById(R.id.cb_Layer_TaiSan)
-        cb_Layer_TaiSan!!.setOnCheckedChangeListener { buttonView, isChecked ->
+        cb_Layer_TaiSan!!.setOnCheckedChangeListener { _, isChecked ->
             for (i in 0 until mLinnearDisplayLayerTaiSan!!.childCount) {
                 val view = mLinnearDisplayLayerTaiSan!!.getChildAt(i)
                 if (view is CheckBox) {
-                    if (isChecked)
-                        view.isChecked = true
-                    else
-                        view.isChecked = false
+                    view.isChecked = isChecked
                 }
             }
         }
@@ -282,93 +280,113 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             for (i in 0 until mLinnearDisplayLayerBaseMap!!.childCount) {
                 val view = mLinnearDisplayLayerBaseMap!!.getChildAt(i)
                 if (view is CheckBox) {
-                    if (isChecked)
-                        view.isChecked = true
-                    else
-                        view.isChecked = false
+                    view.isChecked = isChecked
                 }
             }
         }
     }
 
     private fun setFeatureService() {
-        if (ListObjectDB.getInstance().lstFeatureLayerDTG!!.isEmpty()) return
-        mFeatureLayerDTGS = ArrayList()
-        var featureLayerDTGMauDanhGia: FeatureLayerDTG? = null
-        for (layerInfoDTG in ListObjectDB.getInstance().lstFeatureLayerDTG!!) {
-            var url = layerInfoDTG.url
-            if (!layerInfoDTG.url!!.startsWith("http"))
-                url = "http:" + layerInfoDTG.url!!
-            val serviceFeatureTable = ServiceFeatureTable(url!!)
-            val featureLayer = FeatureLayer(serviceFeatureTable)
-            featureLayer.name = layerInfoDTG.titleLayer
-            featureLayer.maxScale = 0.0
-            featureLayer.minScale = 1000000.0
-            featureLayer.id = layerInfoDTG.id!!
-            val definition = layerInfoDTG.definition
-            if (definition != null && definition != "null")
-            featureLayer.definitionExpression = definition
-            val action = Action(layerInfoDTG.isView, layerInfoDTG.isCreate, layerInfoDTG.isEdit, layerInfoDTG.isDelete)
-            val featureLayerDTG = FeatureLayerDTG(featureLayer, layerInfoDTG.titleLayer, action)
-            featureLayerDTG.outFields = getFieldsDTG(layerInfoDTG.outField)
-            featureLayerDTG.queryFields = getFieldsDTG(layerInfoDTG.outField)
-            featureLayerDTG.updateFields = getFieldsDTG(layerInfoDTG.outField)
-            if (layerInfoDTG.id != null && layerInfoDTG.id == getString(R.string.id_diemdanhgianuoc)) {
-                featureLayer.isPopupEnabled = true
-                mMapViewHandler = MapViewHandler(featureLayerDTG, mMapView!!, this@MainActivity)
-                traCuu = TraCuu(featureLayerDTG, this@MainActivity)
-                featureLayerDTGMauDanhGia = featureLayerDTG
-                mApplication?.featureLayerDiemDanhGia = featureLayer
-                mFeatureLayerDTGS!!.add(featureLayerDTG)
-
-                mMap!!.operationalLayers.add(featureLayer)
+        val size = AtomicInteger(mApplication!!.layerInfos!!.size)
+        for (layerInfo in mApplication!!.layerInfos!!) {
+            if (!layerInfo.isView) {
+                size.decrementAndGet()
+                if (size.get() == 0) {
+                    handlingLoadDone()
+                }
+                continue
             }
-            if (layerInfoDTG.id != null && layerInfoDTG.id == getString(R.string.id_maudanhgia)) {
-                mFeatureLayerDTGS!!.add(featureLayerDTG)
-            }
-            if (layerInfoDTG.id!!.toUpperCase() == getString(R.string.IDLayer_Basemap)) {
+            var url = layerInfo.url
+            if (!layerInfo.url!!.startsWith("http"))
+                url = "http:" + layerInfo.url!!
+            if (layerInfo.layerId!! == Constant.LayerID.BASEMAP) {
                 hanhChinhImageLayers = ArcGISMapImageLayer(url)
-                hanhChinhImageLayers!!.id = layerInfoDTG.id!!
+                hanhChinhImageLayers!!.id = layerInfo.layerId!!
                 mMapView!!.map.operationalLayers.add(hanhChinhImageLayers)
                 hanhChinhImageLayers!!.addDoneLoadingListener {
+
                     if (hanhChinhImageLayers!!.loadStatus == LoadStatus.LOADED) {
                         val sublayerList = hanhChinhImageLayers!!.sublayers
                         for (sublayer in sublayerList) {
                             addCheckBox_SubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerBaseMap!!)
-                            if(sublayer.id == Constant.IDMapLayer.HanhChinh){
+                            if (sublayer.id == Constant.IDMapLayer.HanhChinh) {
                                 mApplication!!.serviceFeatureTableHanhChinh = ServiceFeatureTable(url + "/" + sublayer.id)
                             }
                         }
                     }
+                    size.decrementAndGet()
+                    if (size.get() == 0) {
+                        handlingLoadDone()
+                    }
                 }
                 hanhChinhImageLayers!!.loadAsync()
 
-            } else if (taiSanImageLayers == null && layerInfoDTG.id == "truhongLYR") {
-                taiSanImageLayers = ArcGISMapImageLayer(url.replaceFirst("FeatureServer(.*)".toRegex(), "MapServer"))
-                taiSanImageLayers!!.name = layerInfoDTG.titleLayer
-                taiSanImageLayers!!.id = layerInfoDTG.id!!
-                //                    mArcGISMapImageLayerThematic.setMaxScale(0);
-                //                    mArcGISMapImageLayerThematic.setMinScale(10000000);
-                mMapView!!.map.operationalLayers.add(taiSanImageLayers)
-                taiSanImageLayers!!.addDoneLoadingListener {
-                    if (taiSanImageLayers!!.loadStatus == LoadStatus.LOADED) {
-                        val sublayerList = taiSanImageLayers!!.sublayers
-                        for (sublayer in sublayerList) {
-                            addCheckBox_SubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerTaiSan!!)
+            } else {
+                val serviceFeatureTable = ServiceFeatureTable(url!!)
+                val featureLayer = FeatureLayer(serviceFeatureTable)
+                featureLayer.name = layerInfo.layerName
+                featureLayer.maxScale = 0.0
+                featureLayer.minScale = 1000000.0
+                featureLayer.id = layerInfo.layerId
+                val definition = layerInfo.definition
+                if (definition != null && definition != "null")
+                    featureLayer.definitionExpression = definition
+                val action = Action(layerInfo.isView, layerInfo.isCreate, layerInfo.isEdit, layerInfo.isDelete)
+                val featureLayerDTG = FeatureLayerDTG(featureLayer, layerInfo.layerName, action)
+                if (layerInfo.layerId != null && layerInfo.layerId == Constant.LayerID.DIEM_DANH_GIA) {
+                    mApplication!!.diemDanhGia = featureLayerDTG
+                    featureLayer.isPopupEnabled = true
+                    mMapViewHandler = MapViewHandler(featureLayerDTG, mMapView!!, this@MainActivity)
+                    traCuu = TraCuu(featureLayerDTG, this@MainActivity)
+
+                    mMap!!.operationalLayers.add(featureLayer)
+                    featureLayer.addDoneLoadingListener {
+                        size.decrementAndGet()
+                        if (size.get() == 0) {
+                            handlingLoadDone()
                         }
                     }
                 }
-                taiSanImageLayers!!.loadAsync()
+                if (layerInfo.layerId != null && layerInfo.layerId == Constant.LayerID.MAU_DANH_GIA) {
+                    mApplication!!.mauKiemNghiem = featureLayerDTG
+                    size.decrementAndGet()
+                    if (size.get() == 0) {
+                        handlingLoadDone()
+                    }
+                } else if (taiSanImageLayers == null && layerInfo.layerId == Constant.LayerID.TRU_HONG) {
+                    taiSanImageLayers = ArcGISMapImageLayer(url.replaceFirst("FeatureServer(.*)".toRegex(), "MapServer"))
+                    taiSanImageLayers!!.name = layerInfo.layerName
+                    taiSanImageLayers!!.id = layerInfo.layerId!!
+                    //                    mArcGISMapImageLayerThematic.setMaxScale(0);
+                    //                    mArcGISMapImageLayerThematic.setMinScale(10000000);
+                    mMapView!!.map.operationalLayers.add(taiSanImageLayers)
+                    taiSanImageLayers!!.addDoneLoadingListener {
+                        if (taiSanImageLayers!!.loadStatus == LoadStatus.LOADED) {
+                            val sublayerList = taiSanImageLayers!!.sublayers
+                            for (sublayer in sublayerList) {
+                                addCheckBox_SubLayer(sublayer as ArcGISMapImageSublayer, mLinnearDisplayLayerTaiSan!!)
+                            }
+                        }
+                        size.decrementAndGet()
+                        if (size.get() == 0) {
+                            handlingLoadDone()
+                        }
+                    }
+                    taiSanImageLayers!!.loadAsync()
+                } else {
+                    size.decrementAndGet()
+                    if (size.get() == 0) {
+                        handlingLoadDone()
+                    }
+                }
             }
 
+        }
 
-        }
-        if (mFeatureLayerDTGS!!.size == 0) {
-            mMapView?.let { MySnackBar.make(it, getString(R.string.no_access_permissions), true) }
-            return
-        }
-        mPopup = Popup(this@MainActivity, mMapView!!, mFeatureLayerDTGS as ArrayList<FeatureLayerDTG>, mCallout!!)
-        mPopup!!.setFeatureLayerDTG(featureLayerDTGMauDanhGia)
+    }
+
+    private fun handlingLoadDone() {
+        mPopup = Popup(this@MainActivity, mMapView!!, mCallout!!)
         mMapViewHandler!!.popupInfos = mPopup
         traCuu!!.setPopupInfos(mPopup!!)
         mMap!!.addDoneLoadingListener {
@@ -377,15 +395,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val linnearDisplayLayer = findViewById<View>(R.id.linnearDisplayLayer) as LinearLayout
             val states = arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf())
             val colors = intArrayOf(R.color.colorTextColor_1, R.color.colorTextColor_1)
-            for (layer in mFeatureLayerDTGS!!) {
-                if (layer.featureLayer.id != null && layer.featureLayer.id == getString(R.string.id_diemdanhgianuoc)) {
+            for (layer in mapView.map.operationalLayers) {
+                if (layer is FeatureLayer && layer.id != null && layer.id == Constant.LayerID.DIEM_DANH_GIA) {
                     val checkBox = CheckBox(linnearDisplayLayer.context)
-                    checkBox.text = layer.titleLayer
+                    checkBox.text = mApplication!!.diemDanhGia!!.titleLayer
                     checkBox.isChecked = true
                     CompoundButtonCompat.setButtonTintList(checkBox, ColorStateList(states, colors))
                     linnearDisplayLayer.addView(checkBox)
                     checkBox.setOnCheckedChangeListener { buttonView, isChecked ->
-                        layer.featureLayer.isVisible = buttonView.isChecked
+                        layer.isVisible = buttonView.isChecked
                     }
                 }
             }
@@ -604,12 +622,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mApplication?.center = mMapView?.getCurrentViewpoint(Viewpoint.Type.CENTER_AND_SCALE)?.targetGeometry?.extent?.center
         mMapViewHandler?.addGraphic(mApplication?.center!!)
 
-        if (mApplication?.featureLayerDiemDanhGia != null) {
+        if(mApplication!!.diemDanhGia != null)
             mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
-                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
-        } else {
-
-        }
+                mApplication?.diemDanhGia!!.featureLayer.featureTable as ServiceFeatureTable)
     }
 
     fun showMenuAddAttachment() {
@@ -631,11 +646,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             }
                         }
                     }
-                }
-                ,
+                },
                 onCancel = { cancelAdd() }
         ).show(this)
     }
+
     fun capture() {
         mApplication?.bitmaps = null
         val cameraIntent = Intent(this, CameraActivity::class.java)
@@ -711,12 +726,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
                 mApplication?.bitmaps = bitmaps
                 try {
-                    if (mApplication?.featureLayerDiemDanhGia != null){
+                    if (mApplication?.diemDanhGia != null) {
 //                        mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
 //                                mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
                         mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
-                    }
-                    else{
+                    } else {
 
                     }
                 } catch (e: Exception) {
@@ -727,12 +741,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            }
                 if (mApplication!!.bitmaps != null) {
                     try {
-                        if (mApplication?.featureLayerDiemDanhGia != null){
+                        if (mApplication?.diemDanhGia != null) {
 //                            mPopup!!.showPopupAddFeatureOrChangeGeometry(mApplication?.center!!, mApplication?.selectedFeature,
 //                                    mApplication?.featureLayerDiemDanhGia!!.featureTable as ServiceFeatureTable)
                             mPopup!!.handlingAddFeatureOrChangeGeometry(mApplication?.center!!, null, null)
-                        }
-                        else{
+                        } else {
 
                         }
                     } catch (e: Exception) {
@@ -760,6 +773,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         mApplication?.statusCode = Constant.StatusCode.CANCEL_ADD.value
         mMapViewHandler?.clearGraphics()
     }
+
     companion object {
         private val LATITUDE = 10.10299
         private val LONGTITUDE = 105.9295304

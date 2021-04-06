@@ -41,7 +41,7 @@ class AttachmentActivity : AppCompatActivity() {
         setContentView(R.layout.activity_attachment)
 
         try {
-            shimmer_view_container.startShimmerAnimation()
+            shimmer_view_container.startShimmer()
             mApplication = application as DApplication
             val lstViewAttachment = lstView_alertdialog_attachments
 
@@ -53,7 +53,7 @@ class AttachmentActivity : AppCompatActivity() {
                 override fun processFinish(attachment: Attachment?) {
                     if (attachment == null) {
                         DAlertDialog().show(this@AttachmentActivity, "Thông báo", "Không có ảnh đính kèm!")
-                        shimmer_view_container.stopShimmerAnimation()
+                        shimmer_view_container.stopShimmer()
                         shimmer_view_container.visibility = View.GONE
                         return
                     }
@@ -69,7 +69,7 @@ class AttachmentActivity : AppCompatActivity() {
                             item.bitmap = bmp
                             mAdapter.add(item)
                             mAdapter.notifyDataSetChanged()
-                            shimmer_view_container.stopShimmerAnimation()
+                            shimmer_view_container.stopShimmer()
                             shimmer_view_container.visibility = View.GONE
                         } catch (e: Exception) {
                             DAlertDialog().show(this@AttachmentActivity, e)
@@ -224,7 +224,7 @@ class AttachmentActivity : AppCompatActivity() {
                 }
                 mApplication?.bitmaps = bitmaps
                 try {
-                    if (mApplication?.featureLayerDiemDanhGia != null) {
+                    if (mApplication?.diemDanhGia != null) {
                         mApplication.progressDialog.show(this, container_attachment, "Đang thêm ảnh...")
                         AddAttachmentsAsync(this, bitmaps, mApplication?.selectedFeature!! as ArcGISFeature,
                                 object : AddAttachmentsAsync.AsyncResponse {
@@ -243,7 +243,7 @@ class AttachmentActivity : AppCompatActivity() {
 //            }
                 if (mApplication!!.bitmaps != null) {
                     try {
-                        if (mApplication?.featureLayerDiemDanhGia != null) {
+                        if (mApplication?.diemDanhGia != null) {
                             mApplication.progressDialog.show(this, container_attachment, "Đang thêm ảnh...")
                             AddAttachmentsAsync(this, mApplication.bitmaps!!, mApplication?.selectedFeature!! as ArcGISFeature,
                                     object : AddAttachmentsAsync.AsyncResponse {
@@ -286,7 +286,7 @@ class AttachmentActivity : AppCompatActivity() {
                             item.bitmap = bmp
                             mAdapter.add(item)
                             mAdapter.notifyDataSetChanged()
-                            shimmer_view_container.stopShimmerAnimation()
+                            shimmer_view_container.stopShimmer()
                             shimmer_view_container.visibility = View.GONE
                         } catch (e: Exception) {
                             DAlertDialog().show(this@AttachmentActivity, e)

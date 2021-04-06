@@ -14,7 +14,8 @@ import com.esri.arcgisruntime.data.ServiceFeatureTable
 import vinhlong.ditagis.com.qlcln.adapter.DanhSachDiemDanhGiaAdapter
 import vinhlong.ditagis.com.qlcln.adapter.ThongKeAdapter
 import vinhlong.ditagis.com.qlcln.async.QueryDiemDanhGiaAsync
-import vinhlong.ditagis.com.qlcln.entities.entitiesDB.ListObjectDB
+import vinhlong.ditagis.com.qlcln.entities.DApplication
+import vinhlong.ditagis.com.qlcln.utities.Constant
 import vinhlong.ditagis.com.qlcln.utities.TimePeriodReport
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -24,16 +25,17 @@ class ThongKeActivity : AppCompatActivity() {
     private var txtTongItem: TextView? = null
     private var serviceFeatureTable: ServiceFeatureTable? = null
     private var thongKeAdapter: ThongKeAdapter? = null
-
+    private lateinit var mApplication: DApplication
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_thong_ke)
+        mApplication = application as DApplication
         var items: MutableList<ThongKeAdapter.Item>? = ArrayList<ThongKeAdapter.Item>()
-        for (layerInfoDTG in ListObjectDB.getInstance().lstFeatureLayerDTG!!) {
-            if (layerInfoDTG.id != null && layerInfoDTG.id == getString(R.string.id_diemdanhgianuoc)) {
-                var url = layerInfoDTG.url
-                if (!layerInfoDTG.url!!.startsWith("http"))
-                    url = "http:" + layerInfoDTG.url!!
+        for (layerInfo in mApplication.layerInfos!!) {
+            if (layerInfo.layerId != null && layerInfo.layerId == Constant.LayerID.DIEM_DANH_GIA) {
+                var url = layerInfo.url
+                if (!layerInfo.url!!.startsWith("http"))
+                    url = "http:" + layerInfo.url!!
                 serviceFeatureTable = ServiceFeatureTable(url!!)
             }
         }

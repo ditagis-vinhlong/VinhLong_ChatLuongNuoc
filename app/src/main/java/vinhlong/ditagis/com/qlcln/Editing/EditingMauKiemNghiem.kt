@@ -36,7 +36,7 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
     fun deleteDanhSachMauDanhGia(mSelectedArcGISFeature: ArcGISFeature) {
         this.mSelectedArcGISFeature = mSelectedArcGISFeature
         val attributes = mSelectedArcGISFeature.attributes
-        val idDiemDanhGia = attributes[mainActivity.getString(R.string.IDDIEMDANHGIA)].toString()
+        val idDiemDanhGia = attributes[Constant.FieldDiemDanhGia.ID].toString()
         if (idDiemDanhGia != null) {
             val mauKiemNghiems = ArrayList<MauKiemNghiemApdapter.MauKiemNghiem>()
             mauKiemNghiemApdapter = MauKiemNghiemApdapter(mainActivity, mauKiemNghiems)
@@ -52,7 +52,7 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
     fun showDanhSachMauDanhGia(mSelectedArcGISFeature: ArcGISFeature) {
         this.mSelectedArcGISFeature = mSelectedArcGISFeature
         val attributes = mSelectedArcGISFeature.attributes
-        val idDiemDanhGia = attributes[mainActivity.getString(R.string.IDDIEMDANHGIA)].toString()
+        val idDiemDanhGia = attributes[Constant.FieldDiemDanhGia.ID].toString()
         if (idDiemDanhGia != null) {
             val builder = AlertDialog.Builder(mainActivity, android.R.style.Theme_Holo_Light_NoActionBar_Fullscreen)
             val layout_table_maudanhgia = mainActivity.layoutInflater.inflate(R.layout.layout_title_listview_button, null)
@@ -106,8 +106,8 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
         val attributes = feature.attributes
         val layout_chitiet_maudanhgia = mainActivity.layoutInflater.inflate(R.layout.layout_title_listview, null)
         val listview_chitiet_maudanhgia = layout_chitiet_maudanhgia.findViewById<View>(R.id.listview) as ListView
-        if (attributes["IDMauKiemNghiem"] != null) {
-            (layout_chitiet_maudanhgia.findViewById<View>(R.id.txtTongItem) as TextView).text = attributes["IDMauKiemNghiem"].toString()
+        if (attributes[Constant.FieldMauKiemNghiem.ID] != null) {
+            (layout_chitiet_maudanhgia.findViewById<View>(R.id.txtTongItem) as TextView).text = attributes[Constant.FieldMauKiemNghiem.ID].toString()
         }
         val items = ArrayList<ChiTietMauKiemNghiemAdapter.Item>()
         val fields = table_maudanhgia.fields
@@ -132,20 +132,20 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
                     }
             }
             if (this.featureLayerDTG_MauDanhGia.action!!.isEdit) {
-                if (updateFields!!.size > 0) {
-                    if (updateFields[0] == "*" || updateFields[0] == "") {
-                        item.isEdit = true
-                    } else {
-                        for (updateField in updateFields) {
-                            if (item.fieldName == updateField) {
-                                item.isEdit = true
-                                break
-                            }
+                if (updateFields == null || (updateFields.isNotEmpty() && (updateFields[0] == "*" || updateFields[0] == ""))) {
+                    item.isEdit = true
+                } else {
+                    for (updateField in updateFields) {
+                        if (item.fieldName == updateField) {
+                            item.isEdit = true
+                            break
                         }
                     }
+
                 }
+
                 for (unedit_Field in unedit_Fields) {
-                    if (unedit_Field.toUpperCase() == item.fieldName!!.toUpperCase()) {
+                    if (unedit_Field.equals(item.fieldName!!, ignoreCase = true)) {
                         item.isEdit = false
                         break
                     }
@@ -218,10 +218,9 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
 
     private fun getRefreshTableThoiGianCLNAsync() {
         val attributes = this.mSelectedArcGISFeature!!.attributes
-        val idDiemDanhGia = attributes[mainActivity.getString(R.string.IDDIEMDANHGIA)].toString()
+        val idDiemDanhGia = attributes[Constant.FieldDiemDanhGia.ID].toString()
         RefreshTableMauKiemNghiemAsync(mainActivity, table_maudanhgia,
-                mauKiemNghiemApdapter!!, this.featureLayerDTG_MauDanhGia.action!!, object: RefreshTableMauKiemNghiemAsync.AsyncResponse
-        {
+                mauKiemNghiemApdapter!!, this.featureLayerDTG_MauDanhGia.action!!, object : RefreshTableMauKiemNghiemAsync.AsyncResponse {
             override fun processFinish(features: List<Feature>, thoiGianChatLuongNuocs: List<MauKiemNghiemApdapter.MauKiemNghiem>) {
                 table_feature = features
                 kiemtraDanhSachVuotChiTieu()
@@ -289,7 +288,7 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
 
     private fun addTableLayerMauDanhGia() {
         val attributes = this.mSelectedArcGISFeature!!.attributes
-        val idDiemDanhGia = attributes[mainActivity.getString(R.string.IDDIEMDANHGIA)].toString()
+        val idDiemDanhGia = attributes[Constant.FieldDiemDanhGia.ID].toString()
         val table_maudanhgiaFeature = table_maudanhgia.createFeature()
         val builder = AlertDialog.Builder(mainActivity, android.R.style.Theme_Holo_Light_NoActionBar_Fullscreen)
         val layout_add_maudanhgia = mainActivity.layoutInflater.inflate(R.layout.layout_title_listview_button, null)
@@ -311,17 +310,16 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
                 item.alias = field.alias
                 item.fieldName = field.name
                 item.fieldType = field.fieldType
-                if (updateFields!!.size > 0) {
-                    if (updateFields[0] == "*" || updateFields[0] == "") {
-                        item.isEdit = true
-                    } else {
+                if (updateFields == null || (updateFields.isNotEmpty() && (updateFields[0] == "*" || updateFields[0] == ""))) {
+                    item.isEdit = true
+                } else {
                         for (updateField in updateFields) {
                             if (item.fieldName == updateField) {
                                 item.isEdit = true
                                 break
                             }
                         }
-                    }
+                    
                 }
                 for (unedit_Field in unedit_Fields) {
                     if (unedit_Field.toUpperCase() == item.fieldName!!.toUpperCase()) {
@@ -329,10 +327,10 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
                         break
                     }
                 }
-                if (field.name == mainActivity.getString(R.string.IDDIEMDANHGIA)) {
+                if (field.name == Constant.FieldDiemDanhGia.ID) {
                     item.value = idDiemDanhGia
                 }
-                if (field.name == mainActivity.getString(R.string.IDMAUKIEMNGHIEM)) {
+                if (field.name == Constant.FieldMauKiemNghiem.ID) {
                     if (table_feature!!.size < 9) {
                         item.value = "0" + (table_feature!!.size + 1) + "_" + idDiemDanhGia
                     } else
@@ -399,9 +397,9 @@ class EditingMauKiemNghiem(private val mainActivity: MainActivity, private val f
         val currentTime = Calendar.getInstance()
         mSelectedArcGISFeature!!.attributes["NgayCapNhat"] = currentTime
         if (canhBaoVuotNguong)
-            mSelectedArcGISFeature!!.attributes[Constant.FIELD_DIEM_DANH_GIA.CANH_BAO_VUOT_NGUONG] = Constant.VALUE_CANH_BAO_VUOT_NGUONG.VUOT
+            mSelectedArcGISFeature!!.attributes[Constant.FieldDiemDanhGia.CANH_BAO_VUOT_NGUONG] = Constant.VALUE_CANH_BAO_VUOT_NGUONG.VUOT
         else
-            mSelectedArcGISFeature!!.attributes[Constant.FIELD_DIEM_DANH_GIA.CANH_BAO_VUOT_NGUONG] = Constant.VALUE_CANH_BAO_VUOT_NGUONG.KHONG_VUOT
+            mSelectedArcGISFeature!!.attributes[Constant.FieldDiemDanhGia.CANH_BAO_VUOT_NGUONG] = Constant.VALUE_CANH_BAO_VUOT_NGUONG.KHONG_VUOT
 
         mServiceFeatureTable.updateFeatureAsync(mSelectedArcGISFeature!!).addDoneListener { mServiceFeatureTable.applyEditsAsync().addDoneListener { } }
     }

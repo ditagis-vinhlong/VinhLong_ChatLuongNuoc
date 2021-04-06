@@ -9,6 +9,7 @@ import com.esri.arcgisruntime.data.ServiceFeatureTable
 import vinhlong.ditagis.com.qlcln.R
 import vinhlong.ditagis.com.qlcln.adapter.MauKiemNghiemApdapter
 import vinhlong.ditagis.com.qlcln.libs.Action
+import vinhlong.ditagis.com.qlcln.utities.Constant
 import java.util.*
 import java.util.concurrent.ExecutionException
 
@@ -56,7 +57,7 @@ class RefreshTableMauKiemNghiemAsync(private val mContext: Context, private val 
                     feature.attributes["OBJECTID"]
                     val mauKiemNghiem = MauKiemNghiemApdapter.MauKiemNghiem()
                     mauKiemNghiem.objectid = (feature.attributes["OBJECTID"].toString())
-                    mauKiemNghiem.idMauKiemNghiem = getValueAttributes(feature, mContext.getString(R.string.IDMAUKIEMNGHIEM))
+                    mauKiemNghiem.idMauKiemNghiem = getValueAttributes(feature, Constant.FieldMauKiemNghiem.ID)
                     mauKiemNghiem.tenMau = getValueAttributes(feature, mContext.getString(R.string.TENMAU))
                     mauKiemNghiem.isView = action.isView
                     mauKiemNghiems.add(mauKiemNghiem)

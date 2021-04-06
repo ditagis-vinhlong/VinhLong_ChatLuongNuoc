@@ -54,7 +54,7 @@ class DanhSachDiemDanhGiaAdapter(private var mContext: Context, private var item
         val txt_tracuu_ngaycapnhat = convertView.findViewById<View>(R.id.txt_tracuu_ngaycapnhat) as TextView
         val txt_tracuu_diachi = convertView.findViewById<View>(R.id.txt_tracuu_diachi) as TextView
 
-        val idDiemDanhGia = item.attributes[mContext!!.getString(R.string.IDDIEMDANHGIA)]
+        val idDiemDanhGia = item.attributes[Constant.FieldDiemDanhGia.ID]
         if (idDiemDanhGia != null)
             txt_tracuu_id.text = idDiemDanhGia.toString()
 

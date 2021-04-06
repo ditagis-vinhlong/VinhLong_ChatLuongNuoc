@@ -179,7 +179,7 @@ class AddFeatureAsync(val mActivity: Activity, val mBitmaps: ArrayList<Bitmap>,
                 var added: Int = 0
                 mBitmaps.forEach { bitmap ->
                     run {
-                        val attachmentName = String.format(Constant.AttachmentName.ADD, mApplication.user!!.userName, System.currentTimeMillis())
+                        val attachmentName = String.format(Constant.AttachmentName.ADD, mApplication.user!!.username, System.currentTimeMillis())
                         val addResult = arcGISFeature!!.addAttachmentAsync(DBitmap().getByteArray(bitmap), Bitmap.CompressFormat.PNG.toString(), attachmentName)
                         addResult.addDoneListener {
                             try {

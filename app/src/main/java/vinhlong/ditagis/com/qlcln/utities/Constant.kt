@@ -16,36 +16,55 @@ object Constant {
     val DIACHI = "DiaChi"
     val NGAY_CAP_NHAT = "NgayCapNhat"
     val REQUEST_LOGIN = 0
-//    private val SERVER_API = "http://vwa.ditagis.com/api/api"
-    val SERVER_API = "http://vwaco.com.vn:9092/api"
+
+    //    private val SERVER_API = "http://vwa.ditagis.com/api/api"
+    const val SERVER_API = "http://vwaco.vn:9095"
+
     //    private static final String SERVER_API = "http://113.161.88.180:798/apiv1/api";
     object LayerID {
-        val DIEM_DANH_GIA = "diemdanhgiaLYR"
-        val MAU_DANH_GIA = "maukiemnghiemTBL"
+        val DIEM_DANH_GIA = "DIEMDANHGIA"
+        val MAU_DANH_GIA = "HOSO_MAUKIEMNGHIEM"
+        val BASEMAP = "basemap"
+        val TRU_HONG = "truhongLYR"
     }
-    object IDMapLayer{
+
+    object IDMapLayer {
         val HanhChinh: Long = 6
     }
-    object FieldHanhChinh{
+
+    object FieldHanhChinh {
         val ID_HANH_CHINH = "IDHanhChinh"
         val MA_HUYEN = "MaHuyen"
         val TEN_HUYEN = "TenHuyen"
         val TEN_HANH_CHINH = "TenHanhChinh"
     }
-    object FieldChatLuongNuoc{
+
+    object HTTPRequest {
+        const val GET_METHOD = "GET"
+        const val POST_METHOD = "POST"
+        const val AUTHORIZATION = "Authorization"
+    }
+
+    object FieldChatLuongNuoc {
         val MA_HUYEN = "MaHuyen"
         val MA_XA = "MaXa"
     }
+
     object API_URL {
-        val LOGIN = "$SERVER_API/Login"
-        val DISPLAY_NAME = "$SERVER_API/Account/Profile"
-        val LAYER_INFO = "$SERVER_API/Account/LayerInfo"
-        val IS_ACCESS = "$SERVER_API/Account/IsAccess/m_qlcln"
+        const val UPDATE = "http://bg.nhabe.ditagis.com/vwa-quanlysuco.txt"
+        const val LOGIN = "$SERVER_API/auth/Login"
+        const val CAPABILITIES = "$SERVER_API/auth/capabilities"
+        const val APP_INFO = "$SERVER_API/auth/appinfo/"
+        const val LAYER_INFO = "$SERVER_API/auth/layerinfos"
     }
 
 
-    object FIELD_DIEM_DANH_GIA {
+    object FieldDiemDanhGia {
+        const val ID = "IDDiemDanhGia"
         val CANH_BAO_VUOT_NGUONG = "CanhBaoVuotNguong"
+    }
+    object FieldMauKiemNghiem{
+        const val ID = "IDMauKiemNghiem"
     }
 
     object VALUE_CANH_BAO_VUOT_NGUONG {

@@ -40,23 +40,20 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.atomic.AtomicReference
 
-class Popup(private val mMainActivity: MainActivity, private val mMapView: MapView, layerDTGS: List<FeatureLayerDTG>, private val mCallout: Callout) : AppCompatActivity(), View.OnClickListener {
+class Popup(private val mMainActivity: MainActivity, private val mMapView: MapView, private val mCallout: Callout) : AppCompatActivity(), View.OnClickListener {
     private var mSelectedArcGISFeature: ArcGISFeature? = null
-    private val mServiceFeatureTable: ServiceFeatureTable?
-    private var mFeatureLayerDTG: FeatureLayerDTG? = null
     private var lstFeatureType: MutableList<String>? = null
     private var linearLayout: LinearLayout? = null
-    private val table_thoigiancln: FeatureTable?
     private val featureLayerDTG_MauDanhGia: FeatureLayerDTG?
     private val editingMauKiemNghiem: EditingMauKiemNghiem
     private val format_yearfirst = SimpleDateFormat("yyyy/MM/dd ")
     private val mApplication = mMainActivity.application as DApplication
+    private lateinit var mServiceFeatureTable: ServiceFeatureTable
 
     init {
-        this.mServiceFeatureTable = getServiceFeatureTable(layerDTGS, mMainActivity.resources.getString(R.string.id_diemdanhgianuoc))
-        this.table_thoigiancln = getServiceFeatureTable(layerDTGS, mMainActivity.resources.getString(R.string.name_maudanhgia))
-        this.featureLayerDTG_MauDanhGia = getFeatureLayerDTG(layerDTGS, mMainActivity.resources.getString(R.string.id_maudanhgia))
-        this.editingMauKiemNghiem = this.mServiceFeatureTable?.let { EditingMauKiemNghiem(mMainActivity, featureLayerDTG_MauDanhGia!!, it) }!!
+        this.mServiceFeatureTable = mApplication.diemDanhGia!!.featureLayer.featureTable as ServiceFeatureTable
+        this.featureLayerDTG_MauDanhGia = mApplication.mauKiemNghiem
+        this.editingMauKiemNghiem =  EditingMauKiemNghiem(mMainActivity, featureLayerDTG_MauDanhGia!!, mServiceFeatureTable)
 
     }
 
@@ -83,10 +80,6 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
         super.onCreate(savedInstanceState)
     }
 
-    fun setFeatureLayerDTG(layerDTG: FeatureLayerDTG?) {
-        this.mFeatureLayerDTG = layerDTG
-    }
-
     private fun refressPopup() {
         val attributes = mSelectedArcGISFeature!!.attributes
         for (field in this.mSelectedArcGISFeature!!.featureTable.fields) {
@@ -101,7 +94,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
     }
 
     fun dimissCallout() {
-        val featureLayer = mApplication.featureLayerDiemDanhGia
+        val featureLayer = mApplication.diemDanhGia!!.featureLayer
         featureLayer?.clearSelection()
         if (mCallout != null && mCallout.isShowing) {
             mCallout.dismiss()
@@ -125,7 +118,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
         refressPopup()
 
 
-        if (mFeatureLayerDTG!!.action!!.isEdit) {
+        if (mApplication.diemDanhGia!!.action!!.isEdit) {
             val imgBtn_ViewMoreInfo = linearLayout!!.findViewById<View>(R.id.imgBtn_ViewMoreInfo) as ImageButton
             imgBtn_ViewMoreInfo.visibility = View.VISIBLE
             imgBtn_ViewMoreInfo.setOnClickListener { viewMoreInfo() }
@@ -134,7 +127,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
             imgBtn_viewtablethoigian.visibility = View.VISIBLE
             (linearLayout!!.findViewById<View>(R.id.imgBtn_viewtablethoigian) as ImageButton).setOnClickListener { editingMauKiemNghiem.showDanhSachMauDanhGia(arcGISFeature) }
         }
-        if (mFeatureLayerDTG!!.action!!.isDelete) {
+        if (mApplication.diemDanhGia!!.action!!.isDelete) {
             val imgBtn_delete = linearLayout!!.findViewById<View>(R.id.imgBtn_delete) as ImageButton
             imgBtn_delete.visibility = View.VISIBLE
             imgBtn_delete.setOnClickListener {
@@ -169,7 +162,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
         val lstView = layout.findViewById<ListView>(R.id.lstView_alertdialog_info)
         lstView.adapter = adapter
         lstView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id -> edit(parent, view, position, id) }
-        val updateFields = mFeatureLayerDTG!!.updateFields
+        val updateFields = mApplication.diemDanhGia!!.updateFields
         val typeIdField = mSelectedArcGISFeature!!.featureTable.typeIdField
         for (field in this.mSelectedArcGISFeature!!.featureTable.fields) {
             val value = attr[field.name]
@@ -501,7 +494,7 @@ class Popup(private val mMainActivity: MainActivity, private val mMapView: MapVi
                 }
                 try {
                     // update feature in the feature table
-                    val mapViewResult = mServiceFeatureTable!!.deleteFeatureAsync(mSelectedArcGISFeature!!)
+                    val mapViewResult = mServiceFeatureTable.deleteFeatureAsync(mSelectedArcGISFeature!!)
                     mapViewResult.addDoneListener {
                         // apply change to the server
                         val serverResult = mServiceFeatureTable.applyEditsAsync()

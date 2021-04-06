@@ -137,7 +137,6 @@ class TraCuu(private val featureLayerDTG: FeatureLayerDTG, private val mainActiv
             val selectedFeature = adapter.getItems()!![position]
             if (selectedFeature != null) {
                 dialog.dismiss()
-                popupInfos!!.setFeatureLayerDTG(featureLayerDTG)
                 popupInfos!!.showPopup(selectedFeature as ArcGISFeature)
             }
         }
