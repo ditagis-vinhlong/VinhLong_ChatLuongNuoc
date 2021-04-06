@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_login.*
 import vinhlong.ditagis.com.qlcln.async.CheckForUpdateAsync
@@ -38,8 +39,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
 
         mTxtUsername = findViewById(R.id.txtUsername)
         mTxtPassword = findViewById(R.id.txtPassword)
-//        mTxtUsername!!.text = "test_cln"
-//        mTxtPassword!!.text = "test_cln"
         mApplication = application as DApplication
         mTxtValidation = findViewById(R.id.txt_login_validation)
         val versionCode = packageManager.getPackageInfo(packageName, 0).versionCode
@@ -57,7 +56,12 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                         builder.setPositiveButton("BỎ QUA") { dialog, _ -> dialog.dismiss() }
                         val dialog = builder.create()
                         dialog.show()
-
+                        create()
+                    }
+                    else{
+                        Toast.makeText(this@LoginActivity, "Phiên bản hiện tại là mới nhất",
+                        Toast.LENGTH_SHORT).show()
+                        create()
                     }
                 } else
                     create()
@@ -69,12 +73,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
         Preference.instance.setContext(this)
         val username = Preference.instance!!.loadPreference(Constant.PreferenceKey.USERNAME)
         val password = Preference.instance!!.loadPreference(Constant.PreferenceKey.PASSWORD)
-        //nếu chưa từng đăng nhập thành công trước đó
-        //nhập username và password bình thường
         if (!username.isNullOrEmpty() && !password.isNullOrEmpty()) {
             mTxtUsername!!.setText(username)
             mTxtPassword!!.setText(password)
-//            login()
         }
     }
 

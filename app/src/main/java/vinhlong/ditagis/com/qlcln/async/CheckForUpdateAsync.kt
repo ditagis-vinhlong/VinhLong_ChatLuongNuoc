@@ -72,7 +72,7 @@ class CheckForUpdateAsync(private val mActivity: Activity, private val mDelegate
 
             }
             bufferedReader.close();
-            return parseUser(stringBuilder.toString())
+            return parseUpdateInfo(stringBuilder.toString())
         } catch (e: Exception) {
             Log.e("Lỗi đăng nhập", e.toString())
         } finally {
@@ -81,8 +81,10 @@ class CheckForUpdateAsync(private val mActivity: Activity, private val mDelegate
         return null
     }
 
-    private fun parseUser(data: String?): UpdateInfo {
-        val userType = object : TypeToken<UpdateInfo>() {}.type
-        return Gson().fromJson(data, userType)
+    private fun parseUpdateInfo(data: String?): UpdateInfo? {
+        val userType = object : TypeToken<List<UpdateInfo>>() {}.type
+        val updateInfos = Gson().fromJson(data, userType) as List<UpdateInfo>
+
+        return updateInfos.find { item -> item.AppName == Constant.APP_ID }
     }
 }

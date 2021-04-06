@@ -16,6 +16,7 @@ object Constant {
     val DIACHI = "DiaChi"
     val NGAY_CAP_NHAT = "NgayCapNhat"
     val REQUEST_LOGIN = 0
+    const val APP_ID = "ChatLuongNuoc"
 
     //    private val SERVER_API = "http://vwa.ditagis.com/api/api"
     const val SERVER_API = "http://vwaco.vn:9095"
@@ -55,7 +56,7 @@ object Constant {
     }
 
     object API_URL {
-        const val UPDATE = "http://bg.nhabe.ditagis.com/vwa-quanlysuco.txt"
+        const val UPDATE = "http://bg.nhabe.ditagis.com/vwa-mobile.txt"
         const val LOGIN = "$SERVER_API/auth/Login"
         const val CAPABILITIES = "$SERVER_API/auth/capabilities"
         const val APP_INFO = "$SERVER_API/auth/appinfo/"

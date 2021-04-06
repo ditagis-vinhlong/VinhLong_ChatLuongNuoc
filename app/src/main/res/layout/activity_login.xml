@@ -124,31 +124,4 @@
         android:textSize="17sp" />
 
 
-    <FrameLayout
-        android:id="@+id/layout_login_tool"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorWhite"
-        android:padding="@dimen/padding_layout">
-
-        <!--Button đăng nhập-->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Quên mật khẩu"
-            android:textColor="@color/colorPrimary"
-            android:textSize="17sp" />
-
-        <TextView
-            android:id="@+id/txt_login_changeAccount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:background="@color/colorWhite"
-            android:clickable="true"
-            android:text="Đổi tài khoản"
-            android:textColor="@color/colorPrimary"
-            android:textSize="17sp" />
-    </FrameLayout>
-
 </LinearLayout>
